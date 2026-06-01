@@ -7,13 +7,21 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         if not User.objects.filter(username='admin').exists():
-            User.objects.create_superuser(
+            u = User.objects.create_superuser(
                 username='admin',
                 email='opeoyinlola11@gmail.com',
                 password='Admin@Railway2024',
-                role='super_admin',
-                is_approved=True,
             )
+            u.role = 'super_admin'
+            u.is_approved = True
+            u.is_active = True
+            u.save()
             self.stdout.write('Superuser created successfully')
         else:
-            self.stdout.write('Superuser already exists')
+            u = User.objects.get(username='admin')
+            u.role = 'super_admin'
+            u.is_approved = True
+            u.is_active = True
+            u.set_password('Admin@Railway2024')
+            u.save()
+            self.stdout.write('Superuser updated successfully')
