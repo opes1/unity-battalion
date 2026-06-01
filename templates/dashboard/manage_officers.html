@@ -1,0 +1,134 @@
+{% extends 'dashboard/base_company_dashboard.html' %}
+
+{% block extra_dash_css %}
+.officer-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--dash-blue);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-heading);
+    font-size: .8rem;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.officer-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.officer-name {
+    font-weight: 700;
+    font-size: .88rem;
+}
+
+.officer-username {
+    font-size: .75rem;
+    color: var(--dash-text-muted);
+}
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="dash-page-header">
+    <div>
+        <h1 class="dash-page-title">Officers</h1>
+        <p class="dash-page-subtitle">
+            {{ officers|length }} officer{{ officers|length|pluralize }} linked to {{ company.name }}
+        </p>
+    </div>
+</div>
+
+<div class="dash-card" style="margin-bottom:20px;">
+    <div class="dash-card-header">
+        <div class="dash-card-title">
+            <i class="fas fa-user-tie"></i> Officer List
+        </div>
+        <span style="font-size:.78rem;color:var(--dash-text-muted);">
+            <i class="fas fa-info-circle fa-xs"></i> To add or remove officers, contact the battalion administrator.
+        </span>
+    </div>
+
+    {% if officers %}
+        <table class="dash-table">
+            <thead>
+                <tr>
+                    <th>Officer</th>
+                    <th>Contact</th>
+                    <th>Phone</th>
+                    <th>Joined</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for officer in officers %}
+                    <tr>
+                        <td>
+                            <div class="officer-info">
+                                <div class="officer-avatar">
+                                    {{ officer.first_name|first|upper }}{{ officer.last_name|first|upper }}
+                                </div>
+                                <div>
+                                    <div class="officer-name">
+                                        {{ officer.get_full_name|default:officer.username }}
+                                    </div>
+                                    <div class="officer-username">@{{ officer.username }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {% if officer.email %}
+                                <a href="mailto:{{ officer.email }}"
+                                   style="font-size:.83rem;color:var(--dash-blue);">
+                                    {{ officer.email }}
+                                </a>
+                            {% else %}
+                                <span style="color:var(--dash-text-muted);font-size:.83rem;">—</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-size:.83rem;color:var(--dash-text-muted);">
+                            {{ officer.phone|default:"—" }}
+                        </td>
+                        <td style="font-size:.78rem;color:var(--dash-text-muted);white-space:nowrap;">
+                            {{ officer.date_joined|date:"j M Y" }}
+                        </td>
+                        <td>
+                            {% if officer.is_approved %}
+                                <span class="status-badge status-badge--active">
+                                    <i class="fas fa-circle fa-xs"></i> Approved
+                                </span>
+                            {% else %}
+                                <span class="status-badge status-badge--pending">
+                                    <i class="fas fa-clock fa-xs"></i> Pending
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="dash-empty" style="padding:60px 20px;">
+            <i class="fas fa-user-tie"></i>
+            <p>No officers are linked to your company yet.</p>
+        </div>
+    {% endif %}
+
+</div>
+
+<!-- Info note -->
+<div style="background:#eef3fb;border:1px solid #c8d9f5;border-radius:var(--dash-radius);padding:14px 18px;font-size:.83rem;color:var(--dash-blue);display:flex;gap:10px;align-items:flex-start;">
+    <i class="fas fa-info-circle" style="margin-top:1px;flex-shrink:0;"></i>
+    <span>
+        Officers are company admin accounts assigned to your company. To add a new officer,
+        ask them to register on the battalion website and select your company.
+        Their account will then require approval from the battalion administrator.
+    </span>
+</div>
+
+{% endblock %}

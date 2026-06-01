@@ -1,0 +1,167 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block extra_dash_css %}
+.form-field { margin-bottom: 20px; }
+.form-label {
+    display: block;
+    font-size: .8rem;
+    font-weight: 700;
+    color: var(--dash-text);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: 6px;
+}
+.form-input, .form-textarea {
+    width: 100%;
+    padding: 10px 13px;
+    border: 1.5px solid var(--dash-border);
+    border-radius: var(--dash-radius);
+    font-family: var(--font-body);
+    font-size: .9rem;
+    color: var(--dash-text);
+    background: #fff;
+    transition: border-color .18s, box-shadow .18s;
+    outline: none;
+}
+.form-input:focus, .form-textarea:focus {
+    border-color: var(--dash-blue);
+    box-shadow: 0 0 0 3px rgba(26,58,107,.1);
+}
+.form-input.is-error { border-color: var(--dash-red); box-shadow: 0 0 0 3px rgba(192,57,43,.1); }
+.form-error { font-size: .77rem; color: var(--dash-red); font-weight: 600; margin-top: 4px; display: flex; align-items: center; gap: 4px; }
+.form-hint { font-size: .77rem; color: var(--dash-text-muted); margin-top: 4px; }
+.form-textarea { resize: vertical; min-height: 110px; }
+.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+.form-actions {
+    display: flex; gap: 12px; align-items: center;
+    padding-top: 14px; border-top: 1px solid var(--dash-border); margin-top: 10px;
+}
+.checkbox-row {
+    display: flex; align-items: center; gap: 10px;
+    font-size: .9rem; font-weight: 600; color: var(--dash-text);
+    cursor: pointer;
+}
+.checkbox-row input[type=checkbox] {
+    width: 18px; height: 18px; accent-color: var(--dash-blue); cursor: pointer;
+}
+@media (max-width:768px) { .form-grid-2 { grid-template-columns: 1fr; } }
+{% endblock %}
+
+
+{% block dashboard_content %}
+
+<div class="dash-page-header">
+    <div>
+        <h1 class="dash-page-title">Add Leader</h1>
+        <p class="dash-page-subtitle">New profiles appear on the About page, ordered by the Order field</p>
+    </div>
+    <a href="{% url 'dashboard:manage_leadership' %}" class="btn-dash btn-dash--outline">
+        <i class="fas fa-arrow-left"></i> Back to Leadership
+    </a>
+</div>
+
+<form method="post" action="{% url 'dashboard:add_leader' %}" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="dash-card">
+        <div class="dash-card-header">
+            <div class="dash-card-title">
+                <i class="fas fa-user"></i> Profile Details
+            </div>
+        </div>
+        <div class="dash-card-body">
+
+            <div class="form-grid-2">
+                <div class="form-field">
+                    <label class="form-label" for="name">Full Name <span style="color:var(--dash-red);">*</span></label>
+                    <input type="text" id="name" name="name"
+                           class="form-input {% if errors.name %}is-error{% endif %}"
+                           value="{{ form_data.name }}"
+                           placeholder="e.g. Mr. Adewale Johnson"
+                           required>
+                    {% if errors.name %}
+                        <div class="form-error"><i class="fas fa-exclamation-circle fa-xs"></i> {{ errors.name }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-field">
+                    <label class="form-label" for="role">Role / Title <span style="color:var(--dash-red);">*</span></label>
+                    <input type="text" id="role" name="role"
+                           class="form-input {% if errors.role %}is-error{% endif %}"
+                           value="{{ form_data.role }}"
+                           placeholder="e.g. Battalion President"
+                           required>
+                    {% if errors.role %}
+                        <div class="form-error"><i class="fas fa-exclamation-circle fa-xs"></i> {{ errors.role }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-field">
+                <label class="form-label" for="bio">Biography</label>
+                <textarea id="bio" name="bio"
+                          class="form-textarea"
+                          placeholder="A brief bio for this leader…">{{ form_data.bio }}</textarea>
+            </div>
+
+            <div class="form-grid-2">
+                <div class="form-field">
+                    <label class="form-label" for="email">Email Address</label>
+                    <input type="email" id="email" name="email"
+                           class="form-input"
+                           value="{{ form_data.email }}"
+                           placeholder="leader@example.org">
+                </div>
+                <div class="form-field">
+                    <label class="form-label" for="phone">Phone Number</label>
+                    <input type="text" id="phone" name="phone"
+                           class="form-input"
+                           value="{{ form_data.phone }}"
+                           placeholder="+234 800 000 0000">
+                </div>
+            </div>
+
+            <div class="form-field">
+                <label class="form-label" for="photo">Profile Photo</label>
+                <input type="file" id="photo" name="photo"
+                       class="form-input"
+                       accept="image/*">
+                <div class="form-hint">Square photo recommended. JPEG or PNG, max 2 MB.</div>
+            </div>
+
+            <div class="form-grid-2">
+                <div class="form-field" style="max-width:180px;">
+                    <label class="form-label" for="order">Display Order</label>
+                    <input type="number" id="order" name="order"
+                           class="form-input"
+                           value="{{ form_data.order|default:0 }}"
+                           min="0" max="999">
+                    <div class="form-hint">Lower numbers appear first.</div>
+                </div>
+                <div class="form-field" style="display:flex;align-items:flex-end;padding-bottom:4px;">
+                    <label class="checkbox-row">
+                        <input type="checkbox" name="is_active" value="1"
+                               {% if form_data.is_active != '0' %}checked{% endif %}>
+                        Show on public site
+                    </label>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="dash-card" style="margin-top:18px;">
+        <div class="dash-card-body">
+            <div class="form-actions">
+                <button type="submit" class="btn-dash btn-dash--primary" style="padding:11px 28px;font-size:.92rem;">
+                    <i class="fas fa-save"></i> Save Leader
+                </button>
+                <a href="{% url 'dashboard:manage_leadership' %}" class="btn-dash btn-dash--outline" style="padding:11px 18px;font-size:.92rem;">
+                    Cancel
+                </a>
+            </div>
+        </div>
+    </div>
+
+</form>
+
+{% endblock %}

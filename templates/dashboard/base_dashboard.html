@@ -1,0 +1,860 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% block page_title_meta %}{{ page_title|default:"Dashboard" }}{% endblock %} — Unity Battalion Admin{% endblock %}</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+
+    <style>
+    /* ================================================================
+       DASHBOARD CSS VARIABLES
+    ================================================================ */
+    :root {
+        --dash-sidebar-bg:      #0f2444;
+        --dash-sidebar-hover:   #162f58;
+        --dash-sidebar-active:  #C0392B;
+        --dash-sidebar-width:   260px;
+        --dash-topbar-height:   64px;
+        --dash-content-bg:      #f0f2f7;
+        --dash-card-bg:         #ffffff;
+        --dash-red:             #C0392B;
+        --dash-red-dark:        #a93226;
+        --dash-blue:            #1A3A6B;
+        --dash-blue-dark:       #0f2444;
+        --dash-gold:            #D4A017;
+        --dash-text:            #2c3251;
+        --dash-text-muted:      #7a8098;
+        --dash-border:          #e2e6f0;
+        --dash-radius:          8px;
+        --dash-radius-lg:       12px;
+        --dash-shadow:          0 2px 12px rgba(0,0,0,.08);
+        --dash-shadow-lg:       0 6px 28px rgba(0,0,0,.12);
+        --font-heading:         'Montserrat', sans-serif;
+        --font-body:            'Open Sans', sans-serif;
+    }
+
+    /* ================================================================
+       RESET
+    ================================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+        height: 100%;
+        font-family: var(--font-body);
+        font-size: 15px;
+        color: var(--dash-text);
+        background: var(--dash-content-bg);
+    }
+
+    a { text-decoration: none; color: inherit; }
+    button { cursor: pointer; font-family: var(--font-body); }
+
+    /* ================================================================
+       DASHBOARD SHELL
+    ================================================================ */
+    .dash-shell {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    /* ================================================================
+       SIDEBAR
+    ================================================================ */
+    .dash-sidebar {
+        width: var(--dash-sidebar-width);
+        min-width: var(--dash-sidebar-width);
+        background: var(--dash-sidebar-bg);
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        z-index: 200;
+        transition: transform .28s ease;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    /* ---- Sidebar brand ---- */
+    .dash-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 22px 20px 18px;
+        border-bottom: 1px solid rgba(255,255,255,.08);
+        flex-shrink: 0;
+    }
+
+    .dash-brand-badge {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        background: var(--dash-red);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-heading);
+        font-size: .9rem;
+        font-weight: 800;
+        color: #fff;
+        flex-shrink: 0;
+        letter-spacing: .03em;
+    }
+
+    .dash-brand-text { flex: 1; min-width: 0; }
+
+    .dash-brand-name {
+        font-family: var(--font-heading);
+        font-size: .82rem;
+        font-weight: 700;
+        color: #fff;
+        line-height: 1.2;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .dash-brand-sub {
+        font-size: .68rem;
+        color: rgba(255,255,255,.45);
+        text-transform: uppercase;
+        letter-spacing: .07em;
+        margin-top: 2px;
+    }
+
+    /* ---- Sidebar section label ---- */
+    .dash-nav-section {
+        font-size: .65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .1em;
+        color: rgba(255,255,255,.28);
+        padding: 20px 20px 6px;
+    }
+
+    /* ---- Nav links ---- */
+    .dash-nav { padding: 8px 0; flex: 1; }
+
+    .dash-nav-link {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        padding: 11px 20px;
+        color: rgba(255,255,255,.65);
+        font-size: .88rem;
+        font-weight: 600;
+        transition: background .18s, color .18s, padding-left .18s;
+        position: relative;
+        white-space: nowrap;
+    }
+
+    .dash-nav-link:hover {
+        background: var(--dash-sidebar-hover);
+        color: rgba(255,255,255,.95);
+        padding-left: 26px;
+    }
+
+    .dash-nav-link.active {
+        background: var(--dash-red);
+        color: #fff;
+        border-left: 3px solid rgba(255,255,255,.5);
+        padding-left: 17px;
+    }
+
+    .dash-nav-link.active:hover {
+        background: var(--dash-red-dark);
+        padding-left: 17px;
+    }
+
+    .dash-nav-icon {
+        width: 18px;
+        text-align: center;
+        flex-shrink: 0;
+        font-size: .9rem;
+    }
+
+    /* ---- Badge ---- */
+    .dash-badge {
+        margin-left: auto;
+        background: var(--dash-red);
+        color: #fff;
+        font-size: .64rem;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 10px;
+        min-width: 18px;
+        text-align: center;
+        line-height: 1.4;
+    }
+
+    .dash-nav-link.active .dash-badge {
+        background: rgba(255,255,255,.3);
+    }
+
+    /* ---- Sidebar footer ---- */
+    .dash-sidebar-footer {
+        border-top: 1px solid rgba(255,255,255,.08);
+        padding: 16px 20px;
+        flex-shrink: 0;
+    }
+
+    .dash-user-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .dash-user-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--dash-red);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-heading);
+        font-size: .82rem;
+        font-weight: 700;
+        color: #fff;
+        flex-shrink: 0;
+    }
+
+    .dash-user-name {
+        font-size: .82rem;
+        font-weight: 700;
+        color: rgba(255,255,255,.9);
+        line-height: 1.2;
+    }
+
+    .dash-user-role {
+        font-size: .68rem;
+        color: rgba(255,255,255,.4);
+        text-transform: uppercase;
+        letter-spacing: .05em;
+    }
+
+    .dash-logout-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        width: 100%;
+        padding: 8px 0;
+        background: rgba(255,255,255,.07);
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: var(--dash-radius);
+        color: rgba(255,255,255,.65);
+        font-size: .82rem;
+        font-weight: 600;
+        transition: background .18s, color .18s;
+    }
+    .dash-logout-btn:hover {
+        background: rgba(192,57,43,.35);
+        color: #fff;
+        border-color: rgba(192,57,43,.6);
+    }
+
+    /* ================================================================
+       MAIN AREA
+    ================================================================ */
+    .dash-main {
+        flex: 1;
+        margin-left: var(--dash-sidebar-width);
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        min-width: 0;
+    }
+
+    /* ================================================================
+       TOP BAR
+    ================================================================ */
+    .dash-topbar {
+        height: var(--dash-topbar-height);
+        background: var(--dash-card-bg);
+        border-bottom: 1px solid var(--dash-border);
+        display: flex;
+        align-items: center;
+        padding: 0 28px;
+        gap: 16px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 1px 8px rgba(0,0,0,.05);
+    }
+
+    /* Mobile hamburger */
+    .dash-hamburger {
+        display: none;
+        background: none;
+        border: none;
+        padding: 6px;
+        color: var(--dash-text);
+        font-size: 1.25rem;
+        margin-right: 4px;
+    }
+
+    .dash-topbar-title {
+        font-family: var(--font-heading);
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--dash-text);
+        flex: 1;
+    }
+
+    .dash-topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .dash-topbar-user {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 6px 12px;
+        border-radius: var(--dash-radius);
+        background: var(--dash-content-bg);
+    }
+
+    .dash-topbar-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--dash-red);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-heading);
+        font-size: .75rem;
+        font-weight: 700;
+        color: #fff;
+        flex-shrink: 0;
+    }
+
+    .dash-topbar-name {
+        font-size: .85rem;
+        font-weight: 600;
+        color: var(--dash-text);
+    }
+
+    .dash-topbar-logout {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        background: var(--dash-red);
+        color: #fff;
+        border: none;
+        border-radius: var(--dash-radius);
+        font-size: .82rem;
+        font-weight: 700;
+        transition: background .18s;
+    }
+    .dash-topbar-logout:hover { background: var(--dash-red-dark); }
+
+    /* ================================================================
+       CONTENT
+    ================================================================ */
+    .dash-content {
+        flex: 1;
+        padding: 28px;
+    }
+
+    /* ================================================================
+       MESSAGES / ALERTS
+    ================================================================ */
+    .dash-alerts {
+        margin-bottom: 20px;
+    }
+
+    .dash-alert {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 16px;
+        border-radius: var(--dash-radius);
+        font-size: .88rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .dash-alert--success {
+        background: #e8f8ef;
+        color: #1a6b3a;
+        border: 1px solid #b2dfcc;
+    }
+
+    .dash-alert--error {
+        background: #fdf0f0;
+        color: var(--dash-red);
+        border: 1px solid #f5c6c2;
+    }
+
+    .dash-alert--info {
+        background: #eef3fb;
+        color: var(--dash-blue);
+        border: 1px solid #c8d9f5;
+    }
+
+    .dash-alert-close {
+        margin-left: auto;
+        background: none;
+        border: none;
+        font-size: 1rem;
+        opacity: .5;
+        transition: opacity .15s;
+    }
+    .dash-alert-close:hover { opacity: 1; }
+
+    /* ================================================================
+       COMMON COMPONENTS
+    ================================================================ */
+
+    /* Card */
+    .dash-card {
+        background: var(--dash-card-bg);
+        border-radius: var(--dash-radius-lg);
+        box-shadow: var(--dash-shadow);
+        overflow: hidden;
+    }
+
+    .dash-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 22px 14px;
+        border-bottom: 1px solid var(--dash-border);
+    }
+
+    .dash-card-title {
+        font-family: var(--font-heading);
+        font-size: .95rem;
+        font-weight: 700;
+        color: var(--dash-text);
+        display: flex;
+        align-items: center;
+        gap: 9px;
+    }
+
+    .dash-card-title i { color: var(--dash-red); }
+
+    .dash-card-action {
+        font-size: .8rem;
+        font-weight: 600;
+        color: var(--dash-blue);
+    }
+    .dash-card-action:hover { text-decoration: underline; }
+
+    .dash-card-body { padding: 20px 22px; }
+
+    /* Table */
+    .dash-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: .86rem;
+    }
+
+    .dash-table th {
+        text-align: left;
+        padding: 10px 14px;
+        background: #f8f9fd;
+        font-family: var(--font-heading);
+        font-size: .72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        color: var(--dash-text-muted);
+        border-bottom: 2px solid var(--dash-border);
+        white-space: nowrap;
+    }
+
+    .dash-table td {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--dash-border);
+        vertical-align: middle;
+    }
+
+    .dash-table tr:last-child td { border-bottom: none; }
+    .dash-table tr:hover td { background: #f8f9fd; }
+
+    /* Status badges */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 9px;
+        border-radius: 20px;
+        font-size: .72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+    }
+
+    .status-badge--active    { background: #e8f8ef; color: #1a6b3a; }
+    .status-badge--inactive  { background: #f5f5f5; color: #7a8098; }
+    .status-badge--pending   { background: #fef4e6; color: #e67e22; }
+    .status-badge--approved  { background: #e8f8ef; color: #1a6b3a; }
+    .status-badge--rejected  { background: #fdf0f0; color: #C0392B; }
+    .status-badge--published { background: #e8f8ef; color: #1a6b3a; }
+    .status-badge--draft     { background: #f5f5f5; color: #7a8098; }
+    .status-badge--unread    { background: #fdf0f0; color: #C0392B; }
+    .status-badge--read      { background: #f5f5f5; color: #7a8098; }
+
+    /* Action buttons */
+    .btn-dash {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 12px;
+        border-radius: var(--dash-radius);
+        font-size: .78rem;
+        font-weight: 700;
+        border: 1px solid transparent;
+        transition: background .18s, opacity .18s;
+        white-space: nowrap;
+    }
+
+    .btn-dash--primary  { background: var(--dash-blue); color: #fff; }
+    .btn-dash--primary:hover  { background: #0f2b52; }
+    .btn-dash--danger   { background: var(--dash-red); color: #fff; }
+    .btn-dash--danger:hover   { background: var(--dash-red-dark); }
+    .btn-dash--success  { background: #1a6b3a; color: #fff; }
+    .btn-dash--success:hover  { background: #144f2c; }
+    .btn-dash--outline  { background: transparent; border-color: var(--dash-border); color: var(--dash-text); }
+    .btn-dash--outline:hover  { background: var(--dash-content-bg); }
+    .btn-dash--sm       { padding: 4px 9px; font-size: .72rem; }
+
+    /* Empty state */
+    .dash-empty {
+        text-align: center;
+        padding: 40px 20px;
+        color: var(--dash-text-muted);
+    }
+    .dash-empty i { font-size: 2.5rem; display: block; margin-bottom: 10px; opacity: .3; }
+    .dash-empty p { font-size: .88rem; }
+
+    /* Page header row */
+    .dash-page-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+    }
+
+    .dash-page-title {
+        font-family: var(--font-heading);
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: var(--dash-text);
+        margin: 0;
+    }
+
+    .dash-page-subtitle {
+        font-size: .88rem;
+        color: var(--dash-text-muted);
+        margin-top: 4px;
+    }
+
+    /* ================================================================
+       SIDEBAR OVERLAY (mobile)
+    ================================================================ */
+    .dash-sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.4);
+        z-index: 199;
+    }
+
+    /* ================================================================
+       RESPONSIVE
+    ================================================================ */
+    @media (max-width: 900px) {
+        .dash-sidebar {
+            transform: translateX(calc(-1 * var(--dash-sidebar-width)));
+        }
+        .dash-sidebar.open {
+            transform: translateX(0);
+        }
+        .dash-sidebar-overlay.open { display: block; }
+        .dash-main { margin-left: 0; }
+        .dash-hamburger { display: block; }
+        .dash-topbar { padding: 0 16px; }
+        .dash-content { padding: 16px; }
+    }
+
+    @media (max-width: 540px) {
+        .dash-topbar-user .dash-topbar-name { display: none; }
+    }
+
+    {% block extra_dash_css %}{% endblock %}
+    </style>
+</head>
+<body>
+
+<div class="dash-shell">
+
+    <!-- ================================================================
+         SIDEBAR
+    ================================================================ -->
+    <aside class="dash-sidebar" id="dashSidebar" aria-label="Dashboard navigation">
+
+        <!-- Brand -->
+        <div class="dash-brand">
+            <div style="width:42px;height:42px;border-radius:50%;background:#fff;
+                        border:2px solid rgba(255,255,255,0.2);overflow:hidden;
+                        display:flex;align-items:center;justify-content:center;
+                        padding:3px;flex-shrink:0;">
+                <img src="{% static 'images/bb-logo.png' %}" alt="Boys Brigade Logo"
+                     style="width:100%;height:100%;object-fit:contain;">
+            </div>
+            <div class="dash-brand-text">
+                <div class="dash-brand-name">Unity Battalion</div>
+                <div class="dash-brand-sub">Admin Panel</div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="dash-nav" aria-label="Sidebar">
+
+            <div class="dash-nav-section">Main</div>
+
+            <a href="{% url 'dashboard:super_dashboard' %}"
+               class="dash-nav-link {% if request.resolver_match.url_name == 'super_dashboard' %}active{% endif %}">
+                <i class="fas fa-tachometer-alt dash-nav-icon"></i>
+                Overview
+            </a>
+
+            <div class="dash-nav-section">Management</div>
+
+            <a href="{% url 'dashboard:manage_companies' %}"
+               class="dash-nav-link {% if request.resolver_match.url_name == 'manage_companies' or request.resolver_match.url_name == 'edit_company' %}active{% endif %}">
+                <i class="fas fa-shield-alt dash-nav-icon"></i>
+                Companies
+            </a>
+
+            <a href="{% url 'dashboard:pending_approvals' %}"
+               class="dash-nav-link {% if request.resolver_match.url_name == 'pending_approvals' %}active{% endif %}">
+                <i class="fas fa-check-circle dash-nav-icon"></i>
+                Approvals
+                {% if sidebar_pending_approvals %}
+                    <span class="dash-badge">{{ sidebar_pending_approvals }}</span>
+                {% endif %}
+            </a>
+
+            <a href="{% url 'dashboard:manage_users' %}"
+               class="dash-nav-link {% if request.resolver_match.url_name == 'manage_users' %}active{% endif %}">
+                <i class="fas fa-users dash-nav-icon"></i>
+                Users
+                {% if sidebar_pending_users %}
+                    <span class="dash-badge">{{ sidebar_pending_users }}</span>
+                {% endif %}
+            </a>
+
+            <a href="{% url 'dashboard:manage_events' %}"
+               class="dash-nav-link {% if request.resolver_match.url_name in 'manage_events,add_event,edit_event' %}active{% endif %}">
+                <i class="fas fa-calendar-alt dash-nav-icon"></i>
+                Events
+            </a>
+
+            <a href="{% url 'dashboard:manage_gallery' %}"
+               class="dash-nav-link {% if request.resolver_match.url_name in 'manage_gallery,add_album' %}active{% endif %}">
+                <i class="fas fa-images dash-nav-icon"></i>
+                Gallery
+            </a>
+
+            <a href="{% url 'dashboard:manage_resources' %}"
+               class="dash-nav-link {% if request.resolver_match.url_name in 'manage_resources,add_resource' %}active{% endif %}">
+                <i class="fas fa-file-download dash-nav-icon"></i>
+                Resources
+            </a>
+
+            <a href="{% url 'dashboard:view_messages' %}"
+               class="dash-nav-link {% if request.resolver_match.url_name == 'view_messages' %}active{% endif %}">
+                <i class="fas fa-envelope dash-nav-icon"></i>
+                Messages
+                {% if sidebar_unread_messages %}
+                    <span class="dash-badge">{{ sidebar_unread_messages }}</span>
+                {% endif %}
+            </a>
+
+            <div class="dash-nav-section">Content</div>
+
+            <a href="{% url 'dashboard:edit_about' %}"
+               class="dash-nav-link {% if request.resolver_match.url_name == 'edit_about' %}active{% endif %}">
+                <i class="fas fa-file-alt dash-nav-icon"></i>
+                About Page
+            </a>
+
+            <a href="{% url 'dashboard:edit_contact_info' %}"
+               class="dash-nav-link {% if request.resolver_match.url_name == 'edit_contact_info' %}active{% endif %}">
+                <i class="fas fa-address-card dash-nav-icon"></i>
+                Contact Info
+            </a>
+
+            <a href="{% url 'dashboard:manage_core_values' %}"
+               class="dash-nav-link {% if request.resolver_match.url_name in 'manage_core_values,add_core_value,edit_core_value' %}active{% endif %}">
+                <i class="fas fa-heart dash-nav-icon"></i>
+                Core Values
+            </a>
+
+            <a href="{% url 'dashboard:manage_leadership' %}"
+               class="dash-nav-link {% if request.resolver_match.url_name in 'manage_leadership,add_leader,edit_leader' %}active{% endif %}">
+                <i class="fas fa-users dash-nav-icon"></i>
+                Leadership
+            </a>
+
+            <div class="dash-nav-section">Site</div>
+
+            <a href="{% url 'core:home' %}" target="_blank" class="dash-nav-link">
+                <i class="fas fa-globe dash-nav-icon"></i>
+                View Public Site
+            </a>
+
+            <a href="/admin/" target="_blank" class="dash-nav-link">
+                <i class="fas fa-cog dash-nav-icon"></i>
+                Django Admin
+            </a>
+
+        </nav>
+
+        <!-- Sidebar footer: user info + logout -->
+        <div class="dash-sidebar-footer">
+            <div class="dash-user-info">
+                <div class="dash-user-avatar">
+                    {{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}
+                </div>
+                <div>
+                    <div class="dash-user-name">
+                        {{ request.user.get_full_name|default:request.user.username }}
+                    </div>
+                    <div class="dash-user-role">Super Admin</div>
+                </div>
+            </div>
+            <form method="post" action="{% url 'accounts:logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="dash-logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Sign Out
+                </button>
+            </form>
+        </div>
+
+    </aside>
+
+    <!-- Sidebar overlay (mobile) -->
+    <div class="dash-sidebar-overlay" id="sidebarOverlay"></div>
+
+
+    <!-- ================================================================
+         MAIN AREA
+    ================================================================ -->
+    <div class="dash-main">
+
+        <!-- Top bar -->
+        <header class="dash-topbar">
+            <button class="dash-hamburger" id="dashHamburger" aria-label="Toggle sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <span class="dash-topbar-title">{{ page_title|default:"Dashboard" }}</span>
+
+            <div class="dash-topbar-right">
+                <div class="dash-topbar-user">
+                    <div class="dash-topbar-avatar">
+                        {{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}
+                    </div>
+                    <span class="dash-topbar-name">
+                        {{ request.user.get_full_name|default:request.user.username }}
+                    </span>
+                </div>
+                <form method="post" action="{% url 'accounts:logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="dash-topbar-logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </button>
+                </form>
+            </div>
+        </header>
+
+        <!-- Flash messages -->
+        {% if messages %}
+            <div class="dash-alerts" style="padding: 16px 28px 0;">
+                {% for message in messages %}
+                    <div class="dash-alert dash-alert--{% if message.tags == 'error' %}error{% elif message.tags == 'warning' %}info{% else %}success{% endif %}">
+                        <i class="fas fa-{% if message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}check-circle{% endif %}"></i>
+                        {{ message }}
+                        <button class="dash-alert-close" onclick="this.parentElement.remove()" aria-label="Close">&times;</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Page content -->
+        <main class="dash-content">
+            {% block dashboard_content %}{% endblock %}
+        </main>
+
+    </div><!-- /dash-main -->
+
+</div><!-- /dash-shell -->
+
+<script>
+(function () {
+    'use strict';
+
+    var sidebar  = document.getElementById('dashSidebar');
+    var overlay  = document.getElementById('sidebarOverlay');
+    var hamburger = document.getElementById('dashHamburger');
+
+    function openSidebar() {
+        sidebar.classList.add('open');
+        overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeSidebar() {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    if (hamburger) {
+        hamburger.addEventListener('click', function () {
+            if (sidebar.classList.contains('open')) {
+                closeSidebar();
+            } else {
+                openSidebar();
+            }
+        });
+    }
+
+    if (overlay) {
+        overlay.addEventListener('click', closeSidebar);
+    }
+
+    // Escape key closes sidebar on mobile
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') { closeSidebar(); }
+    });
+}());
+</script>
+
+{% block extra_dash_js %}{% endblock %}
+
+</body>
+</html>

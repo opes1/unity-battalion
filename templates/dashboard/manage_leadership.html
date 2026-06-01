@@ -1,0 +1,149 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block extra_dash_css %}
+.leader-photo {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--dash-border);
+}
+.leader-initials {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: var(--dash-blue);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: .9rem;
+    flex-shrink: 0;
+}
+.badge-active {
+    display: inline-block;
+    padding: 3px 9px;
+    background: #d4edda;
+    color: #155724;
+    border-radius: 20px;
+    font-size: .73rem;
+    font-weight: 700;
+}
+.badge-inactive {
+    display: inline-block;
+    padding: 3px 9px;
+    background: #f8d7da;
+    color: #721c24;
+    border-radius: 20px;
+    font-size: .73rem;
+    font-weight: 700;
+}
+{% endblock %}
+
+
+{% block dashboard_content %}
+
+<div class="dash-page-header">
+    <div>
+        <h1 class="dash-page-title">Leadership Profiles</h1>
+        <p class="dash-page-subtitle">Leadership profiles displayed on the About page. Toggle visibility with the eye button.</p>
+    </div>
+    <a href="{% url 'dashboard:add_leader' %}" class="btn-dash btn-dash--primary">
+        <i class="fas fa-plus"></i> Add Leader
+    </a>
+</div>
+
+{% if messages %}
+    {% for msg in messages %}
+        <div class="dash-alert dash-alert--{{ msg.tags }}" style="margin-bottom:16px;">
+            <i class="fas fa-check-circle"></i> {{ msg }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="dash-card">
+    <div class="dash-card-header">
+        <div class="dash-card-title">
+            <i class="fas fa-users"></i> All Leaders
+            <span class="dash-badge" style="margin-left:8px;">{{ leaders|length }}</span>
+        </div>
+    </div>
+    <div class="dash-card-body" style="padding:0;">
+
+        {% if leaders %}
+        <div style="overflow-x:auto;">
+            <table class="dash-table">
+                <thead>
+                    <tr>
+                        <th style="width:60px;">Photo</th>
+                        <th>Name</th>
+                        <th>Role / Title</th>
+                        <th style="width:90px;">Status</th>
+                        <th style="width:70px;">Order</th>
+                        <th style="width:150px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for leader in leaders %}
+                    <tr>
+                        <td>
+                            {% if leader.photo %}
+                                <img src="{{ leader.photo.url }}" alt="{{ leader.name }}" class="leader-photo">
+                            {% else %}
+                                <div class="leader-initials">
+                                    {{ leader.name|first|upper }}
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td style="font-weight:600;">{{ leader.name }}</td>
+                        <td style="color:var(--dash-text-muted);font-size:.85rem;">{{ leader.role }}</td>
+                        <td>
+                            {% if leader.is_active %}
+                                <span class="badge-active">Visible</span>
+                            {% else %}
+                                <span class="badge-inactive">Hidden</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align:center;">{{ leader.order }}</td>
+                        <td>
+                            <div style="display:flex;gap:5px;flex-wrap:wrap;">
+                                <form method="post" action="{% url 'dashboard:toggle_leader' leader.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                            title="{% if leader.is_active %}Hide{% else %}Show{% endif %}"
+                                            class="btn-dash btn-dash--outline" style="padding:5px 10px;font-size:.78rem;">
+                                        <i class="fas fa-{% if leader.is_active %}eye-slash{% else %}eye{% endif %}"></i>
+                                    </button>
+                                </form>
+                                <a href="{% url 'dashboard:edit_leader' leader.pk %}"
+                                   class="btn-dash btn-dash--outline" style="padding:5px 10px;font-size:.78rem;">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="post" action="{% url 'dashboard:delete_leader' leader.pk %}"
+                                      onsubmit="return confirm('Delete {{ leader.name }}?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-dash btn-dash--danger" style="padding:5px 10px;font-size:.78rem;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="dash-empty-state" style="padding:48px 24px;">
+            <i class="fas fa-users dash-empty-icon"></i>
+            <div class="dash-empty-title">No leadership profiles yet</div>
+            <div class="dash-empty-text">Add profiles to display battalion leaders on the About page.</div>
+            <a href="{% url 'dashboard:add_leader' %}" class="btn-dash btn-dash--primary" style="margin-top:16px;">
+                <i class="fas fa-plus"></i> Add Leader
+            </a>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+{% endblock %}

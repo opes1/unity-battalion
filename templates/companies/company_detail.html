@@ -1,0 +1,954 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ company.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ================================================================
+   Company Detail Page
+================================================================ */
+
+/* ---- Banner / Header ---- */
+.company-header {
+    position: relative;
+    background: linear-gradient(135deg, var(--bb-blue) 0%, var(--bb-blue-dark) 100%);
+    min-height: 260px;
+    overflow: hidden;
+}
+.company-banner-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: .35;
+}
+.company-banner-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(26,58,107,.85) 0%, rgba(15,35,71,.9) 100%);
+}
+.company-header-content {
+    position: relative;
+    z-index: 2;
+    padding: 60px 0 50px;
+    display: flex;
+    align-items: flex-end;
+    gap: 2rem;
+}
+.company-logo-lg {
+    width: 90px;
+    height: 90px;
+    border-radius: 14px;
+    background: #fff;
+    border: 4px solid rgba(255,255,255,.3);
+    box-shadow: 0 6px 24px rgba(0,0,0,.25);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.company-logo-lg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.company-logo-lg-fallback {
+    width: 100%;
+    height: 100%;
+    background: var(--bb-red);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-heading);
+    font-weight: 900;
+    font-size: 2rem;
+    color: #fff;
+}
+.company-header-text { flex: 1; min-width: 0; }
+.company-header-name {
+    font-size: clamp(1.5rem, 4vw, 2.4rem);
+    font-weight: 900;
+    color: #fff;
+    line-height: 1.15;
+    margin-bottom: .4rem;
+}
+.company-header-church {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .9rem;
+    color: rgba(255,255,255,.75);
+    margin-bottom: .75rem;
+}
+.company-header-church i { color: var(--bb-gold); }
+.company-header-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+}
+.header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .05em;
+    padding: .28rem .65rem;
+    border-radius: 4px;
+    background: rgba(255,255,255,.15);
+    color: rgba(255,255,255,.9);
+    border: 1px solid rgba(255,255,255,.2);
+}
+
+/* ---- Breadcrumb ---- */
+.breadcrumb-bar {
+    background: #f4f6fa;
+    border-bottom: 1px solid #e2e6ef;
+    padding: .7rem 0;
+}
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .82rem;
+    color: #666;
+    flex-wrap: wrap;
+}
+.breadcrumb a { color: var(--bb-blue); text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+.breadcrumb-sep { color: #bbb; }
+.breadcrumb-current { color: #333; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+
+/* ---- Info bar ---- */
+.company-infobar {
+    background: var(--bb-blue);
+    padding: 1rem 0;
+}
+.infobar-inner {
+    display: flex;
+    gap: 2.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.infobar-item {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    font-size: .84rem;
+    color: rgba(255,255,255,.85);
+}
+.infobar-item i { color: var(--bb-gold); font-size: .85rem; }
+.infobar-item strong { color: #fff; }
+
+/* ---- Main content layout ---- */
+.company-main {
+    background: #f8f9fc;
+    padding: 60px 0 80px;
+}
+.company-grid {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 3rem;
+    align-items: start;
+}
+
+/* ---- Content blocks ---- */
+.content-block {
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 3px 16px rgba(0,0,0,.06);
+    margin-bottom: 2rem;
+}
+.content-block:last-child { margin-bottom: 0; }
+
+.block-header {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: 1.1rem 1.5rem;
+    border-bottom: 1px solid #f0f2f5;
+    background: #fafbfd;
+}
+.block-header h2 {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--bb-blue);
+    letter-spacing: .03em;
+    margin: 0;
+}
+.block-header-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: var(--bb-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .8rem;
+    color: #fff;
+    flex-shrink: 0;
+}
+.block-header-icon.red   { background: var(--bb-red); }
+.block-header-icon.gold  { background: #b8860b; }
+.block-header-icon.green { background: #1a6b3a; }
+
+.block-body {
+    padding: 1.5rem;
+}
+
+/* ---- About block ---- */
+.about-text {
+    color: #4a5568;
+    font-size: .95rem;
+    line-height: 1.8;
+}
+
+/* ---- Sections offered ---- */
+.sections-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+.section-tile {
+    border-radius: 10px;
+    overflow: hidden;
+    text-decoration: none;
+    display: block;
+    transition: transform .2s, box-shadow .2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+.section-tile:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,.1); }
+.section-tile-top {
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+.section-tile-top.color-red   { background: linear-gradient(135deg, #c0392b, #e74c3c); }
+.section-tile-top.color-blue  { background: linear-gradient(135deg, #1A3A6B, #2c5282); }
+.section-tile-top.color-gold  { background: linear-gradient(135deg, #b8860b, #d4a017); }
+.section-tile-top.color-green { background: linear-gradient(135deg, #1a6b3a, #27ae60); }
+.section-tile-top i { font-size: 1.1rem; color: rgba(255,255,255,.9); }
+.section-tile-text .tile-name {
+    font-size: .88rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+}
+.section-tile-text .tile-age {
+    font-size: .7rem;
+    color: rgba(255,255,255,.7);
+    font-weight: 600;
+}
+.section-tile-bottom {
+    background: #fff;
+    padding: .55rem 1rem;
+    font-size: .75rem;
+    font-weight: 700;
+    color: var(--bb-blue);
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+}
+
+/* ---- Officers block ---- */
+.officers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+.officer-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 1.25rem 1rem;
+    border-radius: 10px;
+    background: #f8f9fc;
+    border: 1px solid #e8eaf0;
+}
+.officer-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--bb-blue);
+    border: 3px solid #fff;
+    box-shadow: 0 3px 12px rgba(0,0,0,.12);
+    overflow: hidden;
+    margin-bottom: .85rem;
+    flex-shrink: 0;
+}
+.officer-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.officer-avatar-fallback {
+    width: 100%;
+    height: 100%;
+    background: var(--bb-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: #fff;
+}
+.officer-name {
+    font-size: .9rem;
+    font-weight: 700;
+    color: var(--bb-blue);
+    margin-bottom: .2rem;
+    line-height: 1.3;
+}
+.officer-role {
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--bb-red);
+}
+
+.no-officers {
+    color: var(--text-muted);
+    font-size: .88rem;
+    text-align: center;
+    padding: 1.5rem 0;
+}
+.no-officers i { font-size: 1.5rem; opacity: .4; margin-bottom: .5rem; display: block; }
+
+/* ---- Events block ---- */
+.events-list { display: flex; flex-direction: column; gap: .85rem; }
+.event-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: .85rem 1rem;
+    border-radius: 8px;
+    background: #f8f9fc;
+    border: 1px solid #eaecf0;
+    text-decoration: none;
+    color: inherit;
+    transition: background .2s, border-color .2s;
+}
+.event-row:hover { background: #e8eef8; border-color: var(--bb-blue); }
+.event-date-badge {
+    width: 46px;
+    text-align: center;
+    flex-shrink: 0;
+    background: var(--bb-blue);
+    border-radius: 8px;
+    padding: .4rem .3rem;
+    line-height: 1;
+}
+.event-date-day {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: #fff;
+    display: block;
+}
+.event-date-mon {
+    font-size: .62rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--bb-gold);
+}
+.event-info { flex: 1; min-width: 0; }
+.event-title {
+    font-size: .9rem;
+    font-weight: 700;
+    color: var(--bb-blue);
+    margin-bottom: .2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.event-meta {
+    font-size: .75rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    flex-wrap: wrap;
+}
+.event-meta i { font-size: .68rem; color: var(--bb-red); }
+.event-type-badge {
+    font-size: .65rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: .15rem .45rem;
+    border-radius: 3px;
+    background: #e8eef8;
+    color: var(--bb-blue);
+}
+.no-events {
+    color: var(--text-muted);
+    font-size: .88rem;
+    text-align: center;
+    padding: 1.5rem 0;
+}
+.no-events i { font-size: 1.5rem; opacity: .4; margin-bottom: .5rem; display: block; }
+
+/* ---- Gallery block ---- */
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: .6rem;
+}
+.gallery-thumb {
+    aspect-ratio: 1;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #e8eef8;
+    position: relative;
+}
+.gallery-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .3s;
+}
+.gallery-thumb:hover img { transform: scale(1.05); }
+.gallery-album-cover {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--bb-blue), var(--bb-blue-dark));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: .5rem;
+    text-decoration: none;
+}
+.gallery-album-cover i { font-size: 1.5rem; color: var(--bb-gold); margin-bottom: .35rem; }
+.gallery-album-cover span {
+    font-size: .68rem;
+    font-weight: 700;
+    color: rgba(255,255,255,.85);
+    line-height: 1.3;
+}
+.no-gallery {
+    color: var(--text-muted);
+    font-size: .88rem;
+    text-align: center;
+    padding: 1.5rem 0;
+}
+.no-gallery i { font-size: 1.5rem; opacity: .4; margin-bottom: .5rem; display: block; }
+
+/* ---- Sidebar ---- */
+.company-sidebar {
+    position: sticky;
+    top: 90px;
+}
+.sidebar-card {
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 3px 16px rgba(0,0,0,.06);
+    margin-bottom: 1.5rem;
+}
+.sidebar-card-header {
+    background: var(--bb-blue);
+    padding: .9rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    font-size: .8rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #fff;
+}
+.sidebar-card-header.red  { background: var(--bb-red); }
+.sidebar-card-header i { font-size: .85rem; }
+.sidebar-card-body { padding: 1.25rem; }
+
+.contact-row {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    padding: .65rem 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: .84rem;
+}
+.contact-row:last-child { border-bottom: none; }
+.contact-row i {
+    color: var(--bb-red);
+    width: 18px;
+    text-align: center;
+    margin-top: .15rem;
+    flex-shrink: 0;
+    font-size: .8rem;
+}
+.contact-row a {
+    color: var(--bb-blue);
+    text-decoration: none;
+    word-break: break-all;
+}
+.contact-row a:hover { text-decoration: underline; }
+.contact-label {
+    display: block;
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: #999;
+    margin-bottom: .1rem;
+}
+
+.sidebar-quick-facts .fact-row {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    padding: .6rem 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: .84rem;
+}
+.sidebar-quick-facts .fact-row:last-child { border-bottom: none; }
+.sidebar-quick-facts .fact-row i {
+    color: var(--bb-blue);
+    width: 18px;
+    text-align: center;
+    margin-top: .15rem;
+    flex-shrink: 0;
+    font-size: .8rem;
+}
+.fact-label {
+    display: block;
+    font-size: .68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: #999;
+    margin-bottom: .1rem;
+}
+.fact-value { color: #333; font-weight: 600; }
+
+.sidebar-cta-box {
+    background: var(--bb-blue);
+    border-radius: 14px;
+    padding: 1.5rem;
+    text-align: center;
+}
+.sidebar-cta-box h3 { font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: .5rem; }
+.sidebar-cta-box p { font-size: .82rem; color: rgba(255,255,255,.75); margin-bottom: 1.1rem; line-height: 1.55; }
+.sidebar-cta-box .btn { width: 100%; justify-content: center; font-size: .84rem; }
+
+/* ---- Responsive ---- */
+@media (max-width: 900px) {
+    .company-grid { grid-template-columns: 1fr; }
+    .company-sidebar { position: static; }
+    .company-header-content { flex-direction: column; align-items: flex-start; gap: 1rem; }
+}
+@media (max-width: 600px) {
+    .sections-grid { grid-template-columns: 1fr 1fr; }
+    .gallery-grid  { grid-template-columns: repeat(2, 1fr); }
+    .officers-grid { grid-template-columns: 1fr 1fr; }
+    .infobar-inner { gap: 1.25rem; }
+}
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<!-- ============================================================
+     COMPANY BANNER / HEADER
+============================================================ -->
+<header class="company-header">
+    {% if company.banner %}
+        <img src="{{ company.banner.url }}" alt="{{ company.name }} banner" class="company-banner-bg">
+        <div class="company-banner-overlay"></div>
+    {% endif %}
+    <div class="container company-header-content">
+
+        <!-- Logo -->
+        <div class="company-logo-lg">
+            {% if company.logo %}
+                <img src="{{ company.logo.url }}" alt="{{ company.name }} logo">
+            {% else %}
+                <div class="company-logo-lg-fallback">{{ company.name|first|upper }}</div>
+            {% endif %}
+        </div>
+
+        <!-- Name, church, section badges -->
+        <div class="company-header-text">
+            <h1 class="company-header-name">{{ company.name }}</h1>
+            <p class="company-header-church">
+                <i class="fas fa-church"></i>
+                {{ company.church }}
+            </p>
+            <div class="company-header-badges">
+                {% for section in sections_enriched %}
+                    <span class="header-badge">
+                        <i class="{{ section.icon }} fa-xs"></i> {{ section.label }}
+                    </span>
+                {% endfor %}
+                {% if company.date_established %}
+                    <span class="header-badge">
+                        <i class="fas fa-history fa-xs"></i> Est. {{ company.date_established|date:"Y" }}
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</header>
+
+
+<!-- ============================================================
+     BREADCRUMB
+============================================================ -->
+<div class="breadcrumb-bar">
+    <div class="container">
+        <nav class="breadcrumb" aria-label="breadcrumb">
+            <a href="{% url 'core:home' %}"><i class="fas fa-home"></i> Home</a>
+            <span class="breadcrumb-sep"><i class="fas fa-chevron-right fa-xs"></i></span>
+            <a href="{% url 'companies:companies_list' %}">Companies</a>
+            <span class="breadcrumb-sep"><i class="fas fa-chevron-right fa-xs"></i></span>
+            <span class="breadcrumb-current">{{ company.name }}</span>
+        </nav>
+    </div>
+</div>
+
+<!-- ============================================================
+     INFO BAR  (meeting day / time / location strip)
+============================================================ -->
+<div class="company-infobar">
+    <div class="container">
+        <div class="infobar-inner">
+            <div class="infobar-item">
+                <i class="fas fa-calendar-day"></i>
+                <span>Meets <strong>{{ company.get_meeting_day_display }}s</strong>
+                    {% if company.meeting_time %}
+                        at <strong>{{ company.meeting_time|time:"g:i A" }}</strong>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="infobar-item">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>{{ company.location|truncatechars:80 }}</span>
+            </div>
+            {% if company.phone %}
+            <div class="infobar-item">
+                <i class="fas fa-phone-alt"></i>
+                <span>{{ company.phone }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+
+<!-- ============================================================
+     MAIN CONTENT + SIDEBAR
+============================================================ -->
+<section class="company-main">
+    <div class="container">
+        <div class="company-grid">
+
+            <!-- ============= LEFT COLUMN ============= -->
+            <div class="company-left">
+
+                <!-- ---- About ---- -->
+                {% if company.about %}
+                <div class="content-block fade-in">
+                    <div class="block-header">
+                        <div class="block-header-icon">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <h2>About {{ company.name }}</h2>
+                    </div>
+                    <div class="block-body">
+                        <p class="about-text">{{ company.about }}</p>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- ---- Sections Offered ---- -->
+                {% if sections_enriched %}
+                <div class="content-block fade-in">
+                    <div class="block-header">
+                        <div class="block-header-icon red">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                        <h2>Sections Offered</h2>
+                    </div>
+                    <div class="block-body">
+                        <div class="sections-grid">
+                            {% for section in sections_enriched %}
+                            <div class="section-tile">
+                                <div class="section-tile-top color-{{ section.color }}">
+                                    <i class="{{ section.icon }}"></i>
+                                    <div class="section-tile-text">
+                                        <p class="tile-name">{{ section.label }}</p>
+                                        <p class="tile-age">{{ section.age }}</p>
+                                    </div>
+                                </div>
+                                <div class="section-tile-bottom">
+                                    {{ section.age }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- ---- Officers ---- -->
+                <div class="content-block fade-in">
+                    <div class="block-header">
+                        <div class="block-header-icon gold">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <h2>Company Officers</h2>
+                    </div>
+                    <div class="block-body">
+                        {% if officers %}
+                            <div class="officers-grid">
+                                {% for officer in officers %}
+                                <div class="officer-card">
+                                    <div class="officer-avatar">
+                                        {% if officer.profile_photo %}
+                                            <img src="{{ officer.profile_photo.url }}" alt="{{ officer.get_full_name }}">
+                                        {% else %}
+                                            <div class="officer-avatar-fallback">
+                                                {{ officer.first_name|first|upper }}{{ officer.last_name|first|upper }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <p class="officer-name">
+                                        {% if officer.get_full_name %}
+                                            {{ officer.get_full_name }}
+                                        {% else %}
+                                            {{ officer.username }}
+                                        {% endif %}
+                                    </p>
+                                    <p class="officer-role">Company Admin</p>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="no-officers">
+                                <i class="fas fa-user-friends"></i>
+                                <p>No officer information available at this time.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- ---- Upcoming Events ---- -->
+                <div class="content-block fade-in">
+                    <div class="block-header">
+                        <div class="block-header-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <h2>Upcoming Events</h2>
+                    </div>
+                    <div class="block-body">
+                        {% if upcoming_events %}
+                            <div class="events-list">
+                                {% for event in upcoming_events %}
+                                <div class="event-row">
+                                    <!-- Date badge -->
+                                    <div class="event-date-badge">
+                                        <span class="event-date-day">{{ event.date|date:"j" }}</span>
+                                        <span class="event-date-mon">{{ event.date|date:"M" }}</span>
+                                    </div>
+                                    <!-- Event info -->
+                                    <div class="event-info">
+                                        <p class="event-title">{{ event.title }}</p>
+                                        <div class="event-meta">
+                                            {% if event.start_time %}
+                                                <span><i class="fas fa-clock"></i> {{ event.start_time|time:"g:i A" }}</span>
+                                            {% endif %}
+                                            {% if event.location %}
+                                                <span><i class="fas fa-map-marker-alt"></i> {{ event.location|truncatechars:35 }}</span>
+                                            {% endif %}
+                                            <span class="event-type-badge">{{ event.get_event_type_display }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="no-events">
+                                <i class="fas fa-calendar-times"></i>
+                                <p>No upcoming events scheduled for this company.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- ---- Photo Gallery ---- -->
+                <div class="content-block fade-in">
+                    <div class="block-header">
+                        <div class="block-header-icon green">
+                            <i class="fas fa-images"></i>
+                        </div>
+                        <h2>Photo Gallery</h2>
+                    </div>
+                    <div class="block-body">
+                        {% if albums %}
+                            <div class="gallery-grid">
+                                {% for album in albums %}
+                                    {% if album.cover_photo %}
+                                        <div class="gallery-thumb">
+                                            <img src="{{ album.cover_photo.url }}" alt="{{ album.title }}">
+                                        </div>
+                                    {% else %}
+                                        {# Show first photo item if no cover #}
+                                        {% with first_item=album.items.filter.first %}
+                                        {% if first_item and first_item.file %}
+                                            <div class="gallery-thumb">
+                                                <img src="{{ first_item.file.url }}" alt="{{ album.title }}">
+                                            </div>
+                                        {% else %}
+                                            <div class="gallery-thumb">
+                                                <div class="gallery-album-cover">
+                                                    <i class="fas fa-images"></i>
+                                                    <span>{{ album.title|truncatechars:30 }}</span>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                        {% endwith %}
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="no-gallery">
+                                <i class="fas fa-camera"></i>
+                                <p>No photos have been uploaded yet.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>{# /.company-left #}
+
+
+            <!-- ============= RIGHT SIDEBAR ============= -->
+            <aside class="company-sidebar">
+
+                <!-- Quick facts -->
+                <div class="sidebar-card fade-in">
+                    <div class="sidebar-card-header">
+                        <i class="fas fa-info-circle"></i> Company Info
+                    </div>
+                    <div class="sidebar-card-body sidebar-quick-facts">
+                        <div class="fact-row">
+                            <i class="fas fa-calendar-day"></i>
+                            <div>
+                                <span class="fact-label">Parade Day</span>
+                                <span class="fact-value">{{ company.get_meeting_day_display }}</span>
+                            </div>
+                        </div>
+                        {% if company.meeting_time %}
+                        <div class="fact-row">
+                            <i class="fas fa-clock"></i>
+                            <div>
+                                <span class="fact-label">Parade Time</span>
+                                <span class="fact-value">{{ company.meeting_time|time:"g:i A" }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="fact-row">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <div>
+                                <span class="fact-label">Location</span>
+                                <span class="fact-value">{{ company.location }}</span>
+                            </div>
+                        </div>
+                        {% if company.date_established %}
+                        <div class="fact-row">
+                            <i class="fas fa-history"></i>
+                            <div>
+                                <span class="fact-label">Year Founded</span>
+                                <span class="fact-value">{{ company.date_established|date:"Y" }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Contact card -->
+                {% if company.phone or company.email %}
+                <div class="sidebar-card fade-in">
+                    <div class="sidebar-card-header red">
+                        <i class="fas fa-address-book"></i> Contact
+                    </div>
+                    <div class="sidebar-card-body">
+                        {% if company.phone %}
+                        <div class="contact-row">
+                            <i class="fas fa-phone-alt"></i>
+                            <div>
+                                <span class="contact-label">Phone</span>
+                                <a href="tel:{{ company.phone }}">{{ company.phone }}</a>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if company.email %}
+                        <div class="contact-row">
+                            <i class="fas fa-envelope"></i>
+                            <div>
+                                <span class="contact-label">Email</span>
+                                <a href="mailto:{{ company.email }}">{{ company.email }}</a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Enrol CTA -->
+                <div class="sidebar-cta-box fade-in">
+                    <h3>Interested in Joining?</h3>
+                    <p>
+                        Contact this company directly or explore other registered companies
+                        across the battalion.
+                    </p>
+                    <a href="{% url 'companies:companies_list' %}" class="btn btn-white" style="margin-bottom: .6rem;">
+                        <i class="fas fa-list"></i> All Companies
+                    </a>
+                    <br>
+                    <a href="{% url 'companies:companies_map' %}" class="btn btn-outline-white" style="margin-top: .5rem;">
+                        <i class="fas fa-map-marker-alt"></i> View on Map
+                    </a>
+                </div>
+
+            </aside>
+
+        </div>{# /.company-grid #}
+    </div>
+</section>
+
+
+<!-- ============================================================
+     BOTTOM CTA
+============================================================ -->
+<section style="background: linear-gradient(135deg, var(--bb-red) 0%, #a93226 100%); padding: 60px 0; text-align:center;">
+    <div class="container fade-in">
+        <h2 style="font-size:clamp(1.5rem,3vw,2rem); font-weight:800; color:#fff; margin-bottom:.75rem;">
+            Explore More of the Battalion
+        </h2>
+        <p style="color:rgba(255,255,255,.82); max-width:500px; margin:0 auto 2rem; line-height:1.65; font-size:.98rem;">
+            Browse all our programs or discover other registered companies across Unity Battalion.
+        </p>
+        <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+            <a href="{% url 'companies:companies_list' %}" class="btn btn-white">
+                <i class="fas fa-flag"></i> All Companies
+            </a>
+            <a href="{% url 'companies:companies_map' %}" class="btn btn-outline-white">
+                <i class="fas fa-map-marker-alt"></i> Company Map
+            </a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

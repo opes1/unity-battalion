@@ -1,0 +1,215 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block extra_dash_css %}
+.form-field { margin-bottom: 20px; }
+.form-label {
+    display: block;
+    font-size: .8rem;
+    font-weight: 700;
+    color: var(--dash-text);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: 6px;
+}
+.form-input, .form-textarea {
+    width: 100%;
+    padding: 10px 13px;
+    border: 1.5px solid var(--dash-border);
+    border-radius: var(--dash-radius);
+    font-family: var(--font-body);
+    font-size: .9rem;
+    color: var(--dash-text);
+    background: #fff;
+    transition: border-color .18s, box-shadow .18s;
+    outline: none;
+}
+.form-input:focus, .form-textarea:focus {
+    border-color: var(--dash-blue);
+    box-shadow: 0 0 0 3px rgba(26,58,107,.1);
+}
+.form-hint { font-size: .77rem; color: var(--dash-text-muted); margin-top: 4px; }
+.form-textarea { resize: vertical; min-height: 80px; }
+.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+.form-actions {
+    display: flex; gap: 12px; align-items: center;
+    padding-top: 12px; border-top: 1px solid var(--dash-border); margin-top: 8px;
+}
+.section-divider {
+    font-size: .72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--dash-text-muted);
+    border-bottom: 1px solid var(--dash-border);
+    padding-bottom: 6px;
+    margin: 28px 0 20px;
+}
+.last-saved {
+    font-size: .76rem;
+    color: var(--dash-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.social-field-icon {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.social-field-icon i {
+    width: 28px;
+    text-align: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+.fa-facebook-f { color: #1877f2; }
+.fa-instagram  { color: #e1306c; }
+.fa-whatsapp   { color: #25d366; }
+@media (max-width: 700px) { .form-grid-2 { grid-template-columns: 1fr; } }
+{% endblock %}
+
+
+{% block dashboard_content %}
+
+<div class="dash-page-header">
+    <div>
+        <h1 class="dash-page-title">Contact Info</h1>
+        <p class="dash-page-subtitle">Update the battalion's public contact details</p>
+    </div>
+    {% if info.updated_at %}
+        <div class="last-saved">
+            <i class="fas fa-clock"></i>
+            Last saved {{ info.updated_at|date:"j M Y, g:i A" }}
+        </div>
+    {% endif %}
+</div>
+
+<div class="dash-card">
+    <div class="dash-card-header">
+        <div class="dash-card-title">
+            <i class="fas fa-address-card"></i> Contact Details
+        </div>
+    </div>
+    <div class="dash-card-body">
+
+        <form method="post" action="{% url 'dashboard:edit_contact_info' %}">
+            {% csrf_token %}
+
+            <!-- ---- Location ---- -->
+            <div class="section-divider">Location &amp; Office</div>
+
+            <div class="form-field">
+                <label class="form-label" for="address">Address</label>
+                <textarea id="address" name="address"
+                          class="form-textarea"
+                          placeholder="Full postal / physical address of the battalion headquarters…">{{ form_data.address }}</textarea>
+                <div class="form-hint">Displayed in the contact sidebar and footer.</div>
+            </div>
+
+            <div class="form-grid-2">
+                <div class="form-field">
+                    <label class="form-label" for="phone">Phone Number</label>
+                    <input type="text"
+                           id="phone" name="phone"
+                           class="form-input"
+                           value="{{ form_data.phone }}"
+                           placeholder="+234 800 000 0000">
+                    <div class="form-hint">Include country code.</div>
+                </div>
+
+                <div class="form-field">
+                    <label class="form-label" for="email">Email Address</label>
+                    <input type="email"
+                           id="email" name="email"
+                           class="form-input"
+                           value="{{ form_data.email }}"
+                           placeholder="info@unitybattalion.org">
+                </div>
+            </div>
+
+            <div class="form-field" style="max-width:400px;">
+                <label class="form-label" for="office_hours">Office Hours</label>
+                <input type="text"
+                       id="office_hours" name="office_hours"
+                       class="form-input"
+                       value="{{ form_data.office_hours }}"
+                       placeholder="e.g. Mon – Fri: 9am – 5pm">
+            </div>
+
+            <!-- ---- Social Media ---- -->
+            <div class="section-divider">Social Media</div>
+
+            <div class="form-field">
+                <label class="form-label" for="facebook_url">Facebook</label>
+                <div class="social-field-icon">
+                    <i class="fab fa-facebook-f"></i>
+                    <input type="url"
+                           id="facebook_url" name="facebook_url"
+                           class="form-input"
+                           value="{{ form_data.facebook_url }}"
+                           placeholder="https://www.facebook.com/unitybattalion">
+                </div>
+                <div class="form-hint">Full URL to the battalion's Facebook page.</div>
+            </div>
+
+            <div class="form-field">
+                <label class="form-label" for="instagram_url">Instagram</label>
+                <div class="social-field-icon">
+                    <i class="fab fa-instagram"></i>
+                    <input type="url"
+                           id="instagram_url" name="instagram_url"
+                           class="form-input"
+                           value="{{ form_data.instagram_url }}"
+                           placeholder="https://www.instagram.com/unitybattalion">
+                </div>
+                <div class="form-hint">Full URL to the battalion's Instagram profile.</div>
+            </div>
+
+            <div class="form-field">
+                <label class="form-label" for="whatsapp_number">WhatsApp Number</label>
+                <div class="social-field-icon">
+                    <i class="fab fa-whatsapp"></i>
+                    <input type="text"
+                           id="whatsapp_number" name="whatsapp_number"
+                           class="form-input"
+                           value="{{ form_data.whatsapp_number }}"
+                           placeholder="2348000000000">
+                </div>
+                <div class="form-hint">
+                    Digits only, no <code>+</code> prefix — used to build a
+                    <code>wa.me</code> deep link, e.g. <code>2348000000000</code>.
+                </div>
+            </div>
+
+            <!-- ---- Map ---- -->
+            <div class="section-divider">Google Maps</div>
+
+            <div class="form-field">
+                <label class="form-label" for="map_embed_url">Map Embed URL</label>
+                <input type="url"
+                       id="map_embed_url" name="map_embed_url"
+                       class="form-input"
+                       value="{{ form_data.map_embed_url }}"
+                       placeholder="https://www.google.com/maps/embed?pb=…">
+                <div class="form-hint">
+                    In Google Maps, click <strong>Share → Embed a map</strong> and copy
+                    the <code>src="…"</code> URL. Paste only the URL here (not the full
+                    <code>&lt;iframe&gt;</code> tag).
+                </div>
+            </div>
+
+            <!-- ---- Actions ---- -->
+            <div class="form-actions">
+                <button type="submit" class="btn-dash btn-dash--primary" style="padding:10px 26px;font-size:.9rem;">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+                <a href="{% url 'core:contact' %}" target="_blank" class="btn-dash btn-dash--outline" style="padding:10px 18px;font-size:.9rem;">
+                    <i class="fas fa-external-link-alt"></i> View Contact Page
+                </a>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+{% endblock %}

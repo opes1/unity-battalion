@@ -1,0 +1,216 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block extra_dash_css %}
+.msg-row--unread td { background: #fffaf8; }
+.msg-row--unread td:first-child {
+    border-left: 3px solid var(--dash-red);
+}
+
+/* ---- Truncated preview (default) ---- */
+.msg-body-preview {
+    font-size: .8rem;
+    color: var(--dash-text-muted);
+    max-width: 320px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+/* ---- Full message (hidden until expanded) ---- */
+.msg-body-full {
+    display: none;
+    font-size: .8rem;
+    color: var(--dash-text-muted);
+    max-width: 320px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.6;
+    padding: 4px 0 2px;
+}
+
+/* ---- Expand / collapse toggle ---- */
+.msg-toggle {
+    display: inline-block;
+    margin-top: 5px;
+    font-size: .74rem;
+    color: var(--dash-blue);
+    cursor: pointer;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+}
+.msg-toggle:hover { color: var(--dash-red); }
+
+/* ---- Stacked action buttons ---- */
+.msg-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
+}
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="dash-page-header">
+    <div>
+        <h1 class="dash-page-title">Contact Messages</h1>
+        <p class="dash-page-subtitle">
+            {{ messages_list|length }} total ·
+            <span {% if unread_count %}style="color:var(--dash-red);font-weight:700;"{% endif %}>
+                {{ unread_count }} unread
+            </span>
+        </p>
+    </div>
+</div>
+
+<div class="dash-card">
+    {% if messages_list %}
+        <table class="dash-table">
+            <thead>
+                <tr>
+                    <th>From</th>
+                    <th>Contact</th>
+                    <th>Subject &amp; Message</th>
+                    <th>Received</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for msg in messages_list %}
+                    <tr class="{% if not msg.is_read %}msg-row--unread{% endif %}">
+
+                        {# ---- Sender name ---- #}
+                        <td>
+                            <div style="font-weight:{% if not msg.is_read %}800{% else %}700{% endif %};font-size:.88rem;">
+                                {{ msg.name }}
+                            </div>
+                        </td>
+
+                        {# ---- Contact details (email already a mailto link) ---- #}
+                        <td>
+                            <div style="font-size:.83rem;">
+                                <a href="mailto:{{ msg.email }}" style="color:var(--dash-blue);">
+                                    {{ msg.email }}
+                                </a>
+                            </div>
+                            {% if msg.phone %}
+                                <div style="font-size:.75rem;color:var(--dash-text-muted);">
+                                    {{ msg.phone }}
+                                </div>
+                            {% endif %}
+                        </td>
+
+                        {# ---- Subject + expandable message body ---- #}
+                        <td>
+                            <div style="font-weight:700;font-size:.88rem;margin-bottom:3px;">
+                                {{ msg.subject }}
+                            </div>
+                            {# Truncated 2-line preview #}
+                            <div class="msg-body-preview">{{ msg.message }}</div>
+                            {# Full text — hidden until toggle clicked #}
+                            <div class="msg-body-full">{{ msg.message }}</div>
+                            <button class="msg-toggle" data-state="collapsed"
+                                    aria-label="Expand full message">
+                                <i class="fas fa-chevron-down" style="font-size:.65rem;margin-right:3px;"></i>
+                                View full message
+                            </button>
+                        </td>
+
+                        {# ---- Timestamp ---- #}
+                        <td style="font-size:.8rem;color:var(--dash-text-muted);white-space:nowrap;">
+                            {{ msg.created_at|date:"j M Y" }}<br>
+                            {{ msg.created_at|date:"g:i A" }}
+                        </td>
+
+                        {# ---- Read / Unread badge ---- #}
+                        <td>
+                            {% if msg.is_read %}
+                                <span class="status-badge status-badge--read">Read</span>
+                            {% else %}
+                                <span class="status-badge status-badge--unread">New</span>
+                            {% endif %}
+                        </td>
+
+                        {# ---- Actions: Reply + Mark read/unread ---- #}
+                        <td>
+                            <div class="msg-actions">
+
+                                {# Reply button — opens mail client pre-filled #}
+                                <a href="mailto:{{ msg.email }}?subject=Re: {{ msg.subject }}&amp;body=Dear {{ msg.name }},%0A%0AThank you for contacting Unity Battalion Council.%0A%0A----%0AOriginal message:%0A{{ msg.message|truncatechars:200 }}"
+                                   class="btn-dash btn-dash--primary btn-dash--sm"
+                                   target="_blank">
+                                    <i class="fas fa-reply"></i> Reply
+                                </a>
+
+                                {# Mark read / unread toggle #}
+                                <form method="post" action="{% url 'dashboard:view_messages' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="message_id" value="{{ msg.pk }}">
+                                    {% if msg.is_read %}
+                                        <input type="hidden" name="action" value="unread">
+                                        <button type="submit" class="btn-dash btn-dash--outline btn-dash--sm">
+                                            <i class="fas fa-envelope"></i> Mark Unread
+                                        </button>
+                                    {% else %}
+                                        <input type="hidden" name="action" value="read">
+                                        <button type="submit" class="btn-dash btn-dash--success btn-dash--sm">
+                                            <i class="fas fa-check"></i> Mark Read
+                                        </button>
+                                    {% endif %}
+                                </form>
+
+                            </div>
+                        </td>
+
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="dash-empty" style="padding:60px 20px;">
+            <i class="fas fa-inbox"></i>
+            <p>No messages have been received yet.</p>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+// ---- Expand / collapse full message text ----
+document.querySelectorAll('.msg-toggle').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        const cell    = btn.closest('td');
+        const preview = cell.querySelector('.msg-body-preview');
+        const full    = cell.querySelector('.msg-body-full');
+        const icon    = btn.querySelector('i');
+        const isCollapsed = btn.dataset.state === 'collapsed';
+
+        if (isCollapsed) {
+            // Expand
+            preview.style.display = 'none';
+            full.style.display    = 'block';
+            btn.dataset.state     = 'expanded';
+            btn.setAttribute('aria-label', 'Collapse message');
+            icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+            btn.lastChild.textContent = ' Collapse';
+        } else {
+            // Collapse back
+            preview.style.display = '-webkit-box';
+            full.style.display    = 'none';
+            btn.dataset.state     = 'collapsed';
+            btn.setAttribute('aria-label', 'Expand full message');
+            icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+            btn.lastChild.textContent = ' View full message';
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,481 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block extra_dash_css %}
+.form-field { margin-bottom: 20px; }
+.form-label {
+    display: block;
+    font-size: .8rem;
+    font-weight: 700;
+    color: var(--dash-text);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: 6px;
+}
+.form-label .req { color: var(--dash-red); margin-left: 2px; }
+.form-input, .form-textarea {
+    width: 100%;
+    padding: 10px 13px;
+    border: 1.5px solid var(--dash-border);
+    border-radius: var(--dash-radius);
+    font-family: var(--font-body);
+    font-size: .9rem;
+    color: var(--dash-text);
+    background: #fff;
+    transition: border-color .18s, box-shadow .18s;
+    outline: none;
+}
+.form-input:focus, .form-textarea:focus {
+    border-color: var(--dash-blue);
+    box-shadow: 0 0 0 3px rgba(26,58,107,.1);
+}
+.form-input.is-error { border-color: var(--dash-red); box-shadow: 0 0 0 3px rgba(192,57,43,.1); }
+.form-error {
+    font-size: .77rem; color: var(--dash-red); font-weight: 600;
+    margin-top: 4px; display: flex; align-items: center; gap: 4px;
+}
+.form-hint { font-size: .77rem; color: var(--dash-text-muted); margin-top: 4px; }
+.form-textarea { resize: vertical; min-height: 110px; }
+.form-textarea--lg { min-height: 170px; }
+.form-textarea--sm { min-height: 70px; }
+.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+.form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0 20px; }
+.form-actions {
+    display: flex; gap: 12px; align-items: center;
+    padding-top: 14px; border-top: 1px solid var(--dash-border); margin-top: 10px;
+}
+/* Section dividers inside cards */
+.form-section-divider {
+    font-size: .7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: var(--dash-text-muted);
+    border-bottom: 1px solid var(--dash-border);
+    padding-bottom: 7px;
+    margin: 26px 0 18px;
+}
+.form-section-divider:first-child { margin-top: 0; }
+/* Banner preview */
+.banner-preview {
+    border-radius: var(--dash-radius);
+    overflow: hidden;
+    max-width: 360px;
+    margin-bottom: 12px;
+    border: 1.5px solid var(--dash-border);
+}
+.banner-preview img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    display: block;
+}
+.banner-none {
+    background: var(--dash-content-bg);
+    height: 80px;
+    border-radius: var(--dash-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .8rem;
+    color: var(--dash-text-muted);
+    border: 1.5px dashed var(--dash-border);
+    margin-bottom: 12px;
+    gap: 8px;
+    max-width: 360px;
+}
+.last-saved {
+    font-size: .76rem;
+    color: var(--dash-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+@media (max-width: 768px) {
+    .form-grid-2, .form-grid-3 { grid-template-columns: 1fr; }
+}
+{% endblock %}
+
+
+{% block dashboard_content %}
+
+<div class="dash-page-header">
+    <div>
+        <h1 class="dash-page-title">Edit About Page</h1>
+        <p class="dash-page-subtitle">Manage public-facing content for the About Us page</p>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        {% if info.updated_at %}
+            <div class="last-saved">
+                <i class="fas fa-clock"></i>
+                Last saved {{ info.updated_at|date:"j M Y, g:i A" }}
+            </div>
+        {% endif %}
+        <a href="{% url 'core:about' %}" target="_blank" class="btn-dash btn-dash--outline">
+            <i class="fas fa-external-link-alt"></i> View About Page
+        </a>
+    </div>
+</div>
+
+<form method="post"
+      action="{% url 'dashboard:edit_about' %}"
+      enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- ================================================================
+         SECTION 1 — Basic Identity
+    ================================================================ -->
+    <div class="dash-card" style="margin-bottom:22px;">
+        <div class="dash-card-header">
+            <div class="dash-card-title">
+                <i class="fas fa-id-badge"></i> Basic Identity
+            </div>
+        </div>
+        <div class="dash-card-body">
+
+            <div class="form-grid-2">
+                <div class="form-field">
+                    <label class="form-label" for="name">Organisation Name</label>
+                    <input type="text" id="name" name="name"
+                           class="form-input"
+                           value="{{ form_data.name }}"
+                           placeholder="Unity Battalion Council">
+                    <div class="form-hint">Full name of the battalion council.</div>
+                </div>
+                <div class="form-field">
+                    <label class="form-label" for="subtitle">Subtitle</label>
+                    <input type="text" id="subtitle" name="subtitle"
+                           class="form-input"
+                           value="{{ form_data.subtitle }}"
+                           placeholder="Boys Brigade Council">
+                    <div class="form-hint">Short sub-line shown beneath the name.</div>
+                </div>
+            </div>
+
+            <div class="form-grid-2">
+                <div class="form-field">
+                    <label class="form-label" for="motto">Motto</label>
+                    <input type="text" id="motto" name="motto"
+                           class="form-input"
+                           value="{{ form_data.motto }}"
+                           placeholder="Sure and Stedfast">
+                    <div class="form-hint">Official motto — used throughout the site.</div>
+                </div>
+                <div class="form-field">
+                    <label class="form-label" for="organisation">Parent Organisation</label>
+                    <input type="text" id="organisation" name="organisation"
+                           class="form-input"
+                           value="{{ form_data.organisation }}"
+                           placeholder="Boys' Brigade Nigeria">
+                </div>
+            </div>
+
+            <div class="form-grid-3">
+                <div class="form-field">
+                    <label class="form-label" for="age_range">Age Range</label>
+                    <input type="text" id="age_range" name="age_range"
+                           class="form-input"
+                           value="{{ form_data.age_range }}"
+                           placeholder="Boys aged 5 – 18+">
+                </div>
+                <div class="form-field">
+                    <label class="form-label" for="founded_year">Founded Year</label>
+                    <input type="number" id="founded_year" name="founded_year"
+                           class="form-input {% if errors.founded_year %}is-error{% endif %}"
+                           value="{{ form_data.founded_year }}"
+                           placeholder="e.g. 2005" min="1800" max="2100">
+                    {% if errors.founded_year %}
+                        <div class="form-error"><i class="fas fa-exclamation-circle fa-xs"></i> {{ errors.founded_year }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-field">
+                    <label class="form-label" for="headquarters">Headquarters</label>
+                    <input type="text" id="headquarters" name="headquarters"
+                           class="form-input"
+                           value="{{ form_data.headquarters }}"
+                           placeholder="Lagos, Nigeria">
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================================================================
+         SECTION 2 — Stats
+    ================================================================ -->
+    <div class="dash-card" style="margin-bottom:22px;">
+        <div class="dash-card-header">
+            <div class="dash-card-title">
+                <i class="fas fa-chart-bar"></i> Stats Strip
+            </div>
+        </div>
+        <div class="dash-card-body">
+            <p style="font-size:.83rem;color:var(--dash-text-muted);margin-bottom:18px;">
+                These numbers appear in the stats strip on the Home page and About page.
+                Include the <code>+</code> suffix if needed, e.g. <code>12+</code>.
+            </p>
+            <div class="form-grid-3">
+                <div class="form-field">
+                    <label class="form-label" for="active_companies">Active Companies</label>
+                    <input type="text" id="active_companies" name="active_companies"
+                           class="form-input"
+                           value="{{ form_data.active_companies }}"
+                           placeholder="12+">
+                </div>
+                <div class="form-field">
+                    <label class="form-label" for="boys_enrolled">Boys Enrolled</label>
+                    <input type="text" id="boys_enrolled" name="boys_enrolled"
+                           class="form-input"
+                           value="{{ form_data.boys_enrolled }}"
+                           placeholder="200+">
+                </div>
+                <div class="form-field">
+                    <label class="form-label" for="bb_sections">BB Sections</label>
+                    <input type="text" id="bb_sections" name="bb_sections"
+                           class="form-input"
+                           value="{{ form_data.bb_sections }}"
+                           placeholder="4">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         SECTION 3 — Home Page Content
+    ================================================================ -->
+    <div class="dash-card" style="margin-bottom:22px;">
+        <div class="dash-card-header">
+            <div class="dash-card-title">
+                <i class="fas fa-home"></i> Home Page Content
+            </div>
+        </div>
+        <div class="dash-card-body">
+            <p style="font-size:.83rem;color:var(--dash-text-muted);margin-bottom:18px;">
+                These fields control content that appears only on the <strong>home page</strong>,
+                not the About page.
+            </p>
+
+            <div class="form-section-divider">Hero Section</div>
+
+            <div class="form-field">
+                <label class="form-label" for="home_hero_title">Hero Heading</label>
+                <textarea id="home_hero_title" name="home_hero_title"
+                          class="form-textarea form-textarea--sm"
+                          placeholder="Building Boys of Character, Faith &amp; Service">{{ form_data.home_hero_title }}</textarea>
+                <div class="form-hint">
+                    Main H1 text on the home page banner.
+                    Use a new line to break the heading onto multiple lines.
+                </div>
+            </div>
+
+            <div class="form-field">
+                <label class="form-label" for="home_hero_description">Hero Description</label>
+                <textarea id="home_hero_description" name="home_hero_description"
+                          class="form-textarea"
+                          placeholder="Unity Battalion Council is committed to advancing Christ's Kingdom…">{{ form_data.home_hero_description }}</textarea>
+                <div class="form-hint">Short paragraph shown below the hero heading.</div>
+            </div>
+
+            <div class="form-section-divider">Stats Strip</div>
+
+            <div class="form-field" style="max-width:200px;">
+                <label class="form-label" for="years_of_service">Years of Service</label>
+                <input type="text" id="years_of_service" name="years_of_service"
+                       class="form-input"
+                       value="{{ form_data.years_of_service }}"
+                       placeholder="10+">
+                <div class="form-hint">Shown in the home page stats strip. Include the <code>+</code> suffix if needed.</div>
+            </div>
+
+            <div class="form-section-divider">Home Page CTA Banner</div>
+
+            <div class="form-field">
+                <label class="form-label" for="home_cta_heading">CTA Heading</label>
+                <input type="text" id="home_cta_heading" name="home_cta_heading"
+                       class="form-input"
+                       value="{{ form_data.home_cta_heading }}"
+                       placeholder="Ready to Join the Battalion?">
+            </div>
+
+            <div class="form-field">
+                <label class="form-label" for="home_cta_text">CTA Paragraph</label>
+                <textarea id="home_cta_text" name="home_cta_text"
+                          class="form-textarea form-textarea--sm"
+                          placeholder="Whether you're a parent looking for the right programme…">{{ form_data.home_cta_text }}</textarea>
+            </div>
+
+            <div class="form-section-divider">Gallery Section</div>
+
+            <div class="form-field">
+                <label class="form-label" for="gallery_subtitle">Gallery Section Subtitle</label>
+                <textarea id="gallery_subtitle" name="gallery_subtitle"
+                          class="form-textarea form-textarea--sm"
+                          placeholder="A glimpse into the life of Unity Battalion…">{{ form_data.gallery_subtitle }}</textarea>
+                <div class="form-hint">Subtitle shown below the "Moments &amp; Memories" heading on the home page.</div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================================================================
+         SECTION 5 — Page Content
+    ================================================================ -->
+    <div class="dash-card" style="margin-bottom:22px;">
+        <div class="dash-card-header">
+            <div class="dash-card-title">
+                <i class="fas fa-file-alt"></i> Page Content
+            </div>
+        </div>
+        <div class="dash-card-body">
+
+            <div class="form-section-divider">Headings</div>
+
+            <div class="form-grid-2">
+                <div class="form-field">
+                    <label class="form-label" for="hero_title">About Page Hero Title</label>
+                    <input type="text" id="hero_title" name="hero_title"
+                           class="form-input"
+                           value="{{ form_data.hero_title }}"
+                           placeholder="About Unity Battalion">
+                    <div class="form-hint">H1 displayed in the About page banner.</div>
+                </div>
+                <div class="form-field">
+                    <label class="form-label" for="history_heading">History Section Heading</label>
+                    <input type="text" id="history_heading" name="history_heading"
+                           class="form-input"
+                           value="{{ form_data.history_heading }}"
+                           placeholder="A Legacy of Faith & Service">
+                </div>
+            </div>
+
+            <div class="form-section-divider">History</div>
+
+            <div class="form-field">
+                <label class="form-label" for="history">History Body Text</label>
+                <textarea id="history" name="history"
+                          class="form-textarea form-textarea--lg"
+                          placeholder="Narrative about how the battalion was founded and has grown over the years…">{{ form_data.history }}</textarea>
+                <div class="form-hint">
+                    Each line break creates a new paragraph on the About page.
+                    Leave blank to show the default placeholder text.
+                </div>
+            </div>
+
+            <div class="form-section-divider">Mission &amp; Vision</div>
+
+            <div class="form-grid-2">
+                <div class="form-field">
+                    <label class="form-label" for="mission">Mission Statement</label>
+                    <textarea id="mission" name="mission"
+                              class="form-textarea"
+                              placeholder="To advance Christ's Kingdom among boys…">{{ form_data.mission }}</textarea>
+                </div>
+                <div class="form-field">
+                    <label class="form-label" for="vision">Vision Statement</label>
+                    <textarea id="vision" name="vision"
+                              class="form-textarea"
+                              placeholder="A battalion where every boy grows…">{{ form_data.vision }}</textarea>
+                </div>
+            </div>
+
+            <div class="form-section-divider">Boys' Brigade Object Statement</div>
+
+            <div class="form-field">
+                <label class="form-label" for="bb_object">BB Object</label>
+                <textarea id="bb_object" name="bb_object"
+                          class="form-textarea form-textarea--sm"
+                          placeholder="The advancement of Christ's Kingdom among Boys…">{{ form_data.bb_object }}</textarea>
+                <div class="form-hint">
+                    Official statement displayed in a highlighted block on the About page.
+                    Leave blank to show the standard default text.
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================================================================
+         SECTION 6 — CTA
+    ================================================================ -->
+    <div class="dash-card" style="margin-bottom:22px;">
+        <div class="dash-card-header">
+            <div class="dash-card-title">
+                <i class="fas fa-bullhorn"></i> Call to Action Section
+            </div>
+        </div>
+        <div class="dash-card-body">
+
+            <div class="form-field">
+                <label class="form-label" for="cta_heading">CTA Heading</label>
+                <input type="text" id="cta_heading" name="cta_heading"
+                       class="form-input"
+                       value="{{ form_data.cta_heading }}"
+                       placeholder="Get Involved with the Battalion">
+            </div>
+
+            <div class="form-field">
+                <label class="form-label" for="cta_text">CTA Paragraph</label>
+                <textarea id="cta_text" name="cta_text"
+                          class="form-textarea form-textarea--sm"
+                          placeholder="Whether you want to enrol your son…">{{ form_data.cta_text }}</textarea>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================================================================
+         SECTION 7 — Banner Image
+    ================================================================ -->
+    <div class="dash-card" style="margin-bottom:22px;">
+        <div class="dash-card-header">
+            <div class="dash-card-title">
+                <i class="fas fa-image"></i> Banner Image
+            </div>
+        </div>
+        <div class="dash-card-body">
+
+            {% if info.banner %}
+                <div class="banner-preview">
+                    <img src="{{ info.banner.url }}" alt="Current banner">
+                </div>
+                <div class="form-hint" style="margin-bottom:12px;">
+                    Current banner — upload a new image to replace it.
+                </div>
+            {% else %}
+                <div class="banner-none">
+                    <i class="fas fa-image"></i>
+                    No banner image set
+                </div>
+            {% endif %}
+
+            <div class="form-field">
+                <label class="form-label" for="banner">Upload Banner</label>
+                <input type="file" id="banner" name="banner"
+                       class="form-input"
+                       accept="image/*">
+                <div class="form-hint">
+                    Recommended: landscape image, at least 1400 × 500 px. JPEG or PNG.
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================================================================
+         SAVE ACTIONS (sticky at bottom)
+    ================================================================ -->
+    <div class="dash-card">
+        <div class="dash-card-body">
+            <div class="form-actions">
+                <button type="submit" class="btn-dash btn-dash--primary" style="padding:11px 28px;font-size:.92rem;">
+                    <i class="fas fa-save"></i> Save All Changes
+                </button>
+                <a href="{% url 'core:about' %}" target="_blank" class="btn-dash btn-dash--outline" style="padding:11px 18px;font-size:.92rem;">
+                    <i class="fas fa-external-link-alt"></i> View About Page
+                </a>
+            </div>
+        </div>
+    </div>
+
+</form>
+
+{% endblock %}

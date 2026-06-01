@@ -1,0 +1,132 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block extra_dash_css %}
+.album-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--dash-content-bg);
+    border: 1px solid var(--dash-border);
+}
+.album-thumb-placeholder {
+    width: 48px;
+    height: 48px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, var(--dash-blue), #0f2b52);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.album-thumb-placeholder i { color: rgba(255,255,255,.3); font-size: .9rem; }
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="dash-page-header">
+    <div>
+        <h1 class="dash-page-title">Gallery Management</h1>
+        <p class="dash-page-subtitle">{{ albums|length }} album{{ albums|length|pluralize }}</p>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <a href="{% url 'dashboard:add_album' %}" class="btn-dash btn-dash--primary">
+            <i class="fas fa-plus"></i> Add Album
+        </a>
+        <a href="{% url 'gallery:gallery_list' %}" target="_blank" class="btn-dash btn-dash--outline">
+            <i class="fas fa-external-link-alt"></i> View Public Gallery
+        </a>
+    </div>
+</div>
+
+
+<div class="dash-card">
+    {% if albums %}
+        <table class="dash-table">
+            <thead>
+                <tr>
+                    <th>Album</th>
+                    <th>Company</th>
+                    <th>Photos</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for album in albums %}
+                    <tr>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:12px;">
+                                {% if album.cover_photo %}
+                                    <img src="{{ album.cover_photo.url }}"
+                                         alt="{{ album.title }}"
+                                         class="album-thumb">
+                                {% else %}
+                                    <div class="album-thumb-placeholder">
+                                        <i class="fas fa-images"></i>
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <div style="font-weight:700;font-size:.88rem;">{{ album.title }}</div>
+                                    {% if album.description %}
+                                        <div style="font-size:.75rem;color:var(--dash-text-muted);">
+                                            {{ album.description|truncatechars:50 }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td style="font-size:.83rem;">
+                            {{ album.company.name|default:"Battalion-Wide" }}
+                        </td>
+                        <td style="font-size:.83rem;">
+                            {% with count=album.items.count %}
+                                <span style="font-weight:700;">{{ count }}</span>
+                                item{{ count|pluralize }}
+                            {% endwith %}
+                        </td>
+                        <td style="font-size:.78rem;color:var(--dash-text-muted);white-space:nowrap;">
+                            {{ album.created_at|date:"j M Y" }}
+                        </td>
+                        <td>
+                            <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+                                <!-- View public album -->
+                                <a href="{% url 'gallery:album_detail' album.pk %}"
+                                   target="_blank"
+                                   class="btn-dash btn-dash--outline btn-dash--sm"
+                                   title="View public album">
+                                    <i class="fas fa-external-link-alt"></i> View
+                                </a>
+                                <!-- Add photos -->
+                                <a href="{% url 'dashboard:add_photos_to_album' album.pk %}"
+                                   class="btn-dash btn-dash--primary btn-dash--sm">
+                                    <i class="fas fa-camera"></i> Add Photos
+                                </a>
+                                <!-- Delete album -->
+                                <form method="post" action="{% url 'dashboard:delete_album' album.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                            class="btn-dash btn-dash--danger btn-dash--sm"
+                                            onclick="return confirm('Delete album &quot;{{ album.title }}&quot; and ALL its photos? This cannot be undone.')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="dash-empty" style="padding:60px 20px;">
+            <i class="fas fa-images"></i>
+            <p>No albums have been created yet.</p>
+            <a href="{% url 'dashboard:add_album' %}" class="btn-dash btn-dash--primary" style="margin-top:16px;">
+                <i class="fas fa-plus"></i> Create First Album
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

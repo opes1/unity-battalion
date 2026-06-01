@@ -1,0 +1,144 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block extra_dash_css %}
+.event-type-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 5px;
+    flex-shrink: 0;
+}
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="dash-page-header">
+    <div>
+        <h1 class="dash-page-title">Events</h1>
+        <p class="dash-page-subtitle">{{ events|length }} event{{ events|length|pluralize }} total</p>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <a href="{% url 'dashboard:add_event' %}" class="btn-dash btn-dash--primary">
+            <i class="fas fa-plus"></i> Add Event
+        </a>
+        <a href="{% url 'events:events_list' %}" target="_blank" class="btn-dash btn-dash--outline">
+            <i class="fas fa-external-link-alt"></i> View Public Calendar
+        </a>
+    </div>
+</div>
+
+<div class="dash-card">
+    {% if events %}
+        <table class="dash-table">
+            <thead>
+                <tr>
+                    <th>Event</th>
+                    <th>Type</th>
+                    <th>Date</th>
+                    <th>Company</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ev in events %}
+                    <tr>
+                        <td>
+                            <div style="font-weight:700;font-size:.88rem;">{{ ev.title }}</div>
+                            {% if ev.location %}
+                                <div style="font-size:.75rem;color:var(--dash-text-muted);">
+                                    <i class="fas fa-map-marker-alt fa-xs"></i> {{ ev.location|truncatechars:40 }}
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if ev.event_type == 'parade' %}
+                                <span class="event-type-dot" style="background:#1A3A6B;"></span>Parade
+                            {% elif ev.event_type == 'competition' %}
+                                <span class="event-type-dot" style="background:#C0392B;"></span>Competition
+                            {% elif ev.event_type == 'training' %}
+                                <span class="event-type-dot" style="background:#1a6b3a;"></span>Training
+                            {% elif ev.event_type == 'church' %}
+                                <span class="event-type-dot" style="background:#8e44ad;"></span>Church
+                            {% else %}
+                                <span class="event-type-dot" style="background:#b8860b;"></span>Other
+                            {% endif %}
+                        </td>
+                        <td style="font-size:.82rem;white-space:nowrap;">
+                            {{ ev.date|date:"j M Y" }}
+                            {% if ev.start_time %}
+                                <br><span style="color:var(--dash-text-muted);">{{ ev.start_time|time:"g:i A" }}</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-size:.83rem;">
+                            {{ ev.company.name|default:"Battalion-Wide" }}
+                        </td>
+                        <td>
+                            {% if ev.is_published %}
+                                <span class="status-badge status-badge--published">Published</span>
+                            {% else %}
+                                <span class="status-badge status-badge--draft">Draft</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+                                <!-- Publish / Unpublish toggle -->
+                                <form method="post" action="{% url 'dashboard:manage_events' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="event_id" value="{{ ev.pk }}">
+                                    {% if ev.is_published %}
+                                        <input type="hidden" name="action" value="unpublish">
+                                        <button type="submit"
+                                                class="btn-dash btn-dash--outline btn-dash--sm"
+                                                onclick="return confirm('Unpublish this event?')">
+                                            <i class="fas fa-eye-slash"></i> Unpublish
+                                        </button>
+                                    {% else %}
+                                        <input type="hidden" name="action" value="publish">
+                                        <button type="submit"
+                                                class="btn-dash btn-dash--success btn-dash--sm"
+                                                onclick="return confirm('Publish this event?')">
+                                            <i class="fas fa-eye"></i> Publish
+                                        </button>
+                                    {% endif %}
+                                </form>
+                                <!-- Edit -->
+                                <a href="{% url 'dashboard:edit_event' ev.pk %}"
+                                   class="btn-dash btn-dash--primary btn-dash--sm">
+                                    <i class="fas fa-pen"></i> Edit
+                                </a>
+                                <!-- View public -->
+                                <a href="{% url 'events:event_detail' ev.pk %}"
+                                   target="_blank"
+                                   class="btn-dash btn-dash--outline btn-dash--sm"
+                                   title="View public page">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </a>
+                                <!-- Delete -->
+                                <form method="post" action="{% url 'dashboard:delete_event' ev.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                            class="btn-dash btn-dash--danger btn-dash--sm"
+                                            onclick="return confirm('Delete this event? This cannot be undone.')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="dash-empty" style="padding:60px 20px;">
+            <i class="fas fa-calendar-alt"></i>
+            <p>No events have been created yet.</p>
+            <a href="{% url 'dashboard:add_event' %}" class="btn-dash btn-dash--primary" style="margin-top:16px;">
+                <i class="fas fa-plus"></i> Add First Event
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

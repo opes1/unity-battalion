@@ -1,0 +1,431 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ album.title }} — Gallery — Unity Battalion{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Smooth fade for lightbox images during navigation */
+.lightbox-img-wrapper img.lb-fade-out {
+    opacity: 0;
+    transition: opacity .15s ease;
+}
+.lightbox-img-wrapper img.lb-fade-in {
+    opacity: 1;
+    transition: opacity .2s ease;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ================================================================
+     HERO / BREADCRUMB
+================================================================ -->
+<section class="gallery-hero">
+    <div class="container">
+        <div class="gallery-hero-tag">
+            <i class="fas fa-images"></i>
+            {% if album.company %}{{ album.company.name }}{% else %}Battalion Gallery{% endif %}
+        </div>
+        <h1>{{ album.title }}</h1>
+        {% if album.description %}
+            <p class="gallery-hero-sub">{{ album.description }}</p>
+        {% endif %}
+        <nav class="gallery-breadcrumb" aria-label="Breadcrumb">
+            <a href="{% url 'core:home' %}"><i class="fas fa-home fa-sm"></i> Home</a>
+            <span class="sep">/</span>
+            <a href="{% url 'gallery:gallery_list' %}">Gallery</a>
+            <span class="sep">/</span>
+            <span>{{ album.title }}</span>
+        </nav>
+    </div>
+</section>
+
+
+<!-- ================================================================
+     ALBUM CONTENT
+================================================================ -->
+<div class="album-detail-page">
+    <div class="container">
+        <div class="album-detail-layout fade-in">
+
+            <!-- ---- Main column ---- -->
+            <div class="album-detail-main">
+
+                <!-- Back button -->
+                <div style="margin-bottom:24px;">
+                    <a href="{% url 'gallery:gallery_list' %}" class="btn btn-outline btn-sm">
+                        <i class="fas fa-arrow-left"></i> Back to Gallery
+                    </a>
+                </div>
+
+                <!-- ---- PHOTOS ---- -->
+                {% if photos %}
+                    <div class="photo-grid" id="photoGrid">
+                        {% for photo in photos %}
+                            <div class="photo-grid-item"
+                                 data-index="{{ forloop.counter0 }}"
+                                 data-src="{{ photo.file.url }}"
+                                 data-caption="{{ photo.caption|default:'' }}"
+                                 role="button"
+                                 tabindex="0"
+                                 aria-label="View photo{% if photo.caption %}: {{ photo.caption }}{% endif %}">
+                                <img src="{{ photo.file.url }}"
+                                     alt="{{ photo.caption|default:album.title }}"
+                                     loading="lazy">
+                                <div class="photo-grid-overlay">
+                                    <i class="fas fa-expand-alt"></i>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                {% else %}
+                    <div class="album-no-photos">
+                        <i class="fas fa-camera"></i>
+                        <h3>No Photos Yet</h3>
+                        <p>Photos for this album haven't been uploaded yet. Check back soon.</p>
+                    </div>
+                {% endif %}
+
+
+                <!-- ---- VIDEOS ---- -->
+                {% if videos %}
+                    <div style="margin-top:14px;">
+                        <h2 class="video-section-title">
+                            <i class="fas fa-video"></i> Videos
+                        </h2>
+                        <div class="video-grid">
+                            {% for video in videos %}
+                                <div class="video-card">
+                                    <div class="video-embed-wrapper">
+                                        {% if video.video_url %}
+                                            {# Convert bare YouTube/Vimeo links to embeds #}
+                                            {% with url=video.video_url %}
+                                                {% if "youtube.com/watch" in url %}
+                                                    {% with vid_id=url|slice:"32:" %}
+                                                        <iframe
+                                                            src="https://www.youtube.com/embed/{{ vid_id|cut:'v=' }}"
+                                                            title="{{ video.caption|default:'Video' }}"
+                                                            allowfullscreen
+                                                            loading="lazy">
+                                                        </iframe>
+                                                    {% endwith %}
+                                                {% elif "youtu.be/" in url %}
+                                                    <iframe
+                                                        src="https://www.youtube.com/embed/{{ url|slice:'17:' }}"
+                                                        title="{{ video.caption|default:'Video' }}"
+                                                        allowfullscreen
+                                                        loading="lazy">
+                                                    </iframe>
+                                                {% elif "vimeo.com/" in url %}
+                                                    <iframe
+                                                        src="https://player.vimeo.com/video/{{ url|slice:'18:' }}"
+                                                        title="{{ video.caption|default:'Video' }}"
+                                                        allowfullscreen
+                                                        loading="lazy">
+                                                    </iframe>
+                                                {% else %}
+                                                    <video controls preload="metadata">
+                                                        <source src="{{ url }}">
+                                                        Your browser does not support HTML5 video.
+                                                    </video>
+                                                {% endif %}
+                                            {% endwith %}
+                                        {% elif video.file %}
+                                            <video controls preload="metadata">
+                                                <source src="{{ video.file.url }}">
+                                                Your browser does not support HTML5 video.
+                                            </video>
+                                        {% endif %}
+                                    </div>
+                                    {% if video.caption %}
+                                        <p class="video-card-caption">{{ video.caption }}</p>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+            </div><!-- /album-detail-main -->
+
+
+            <!-- ---- Sidebar ---- -->
+            <aside class="album-detail-sidebar">
+
+                <!-- Album info -->
+                <div class="album-meta-card">
+                    <h3 class="album-meta-title">
+                        <i class="fas fa-info-circle fa-sm"></i> Album Info
+                    </h3>
+                    <ul class="album-meta-list">
+                        <li>
+                            <i class="fas fa-camera"></i>
+                            <span>{{ photos.count }} photo{{ photos.count|pluralize }}</span>
+                        </li>
+                        {% if videos %}
+                            <li>
+                                <i class="fas fa-video"></i>
+                                <span>{{ videos.count }} video{{ videos.count|pluralize }}</span>
+                            </li>
+                        {% endif %}
+                        {% if album.company %}
+                            <li>
+                                <i class="fas fa-shield-alt"></i>
+                                <a href="{% url 'companies:company_detail' album.company.pk %}"
+                                   style="color:var(--bb-blue);text-decoration:none;">
+                                    {{ album.company.name }}
+                                </a>
+                            </li>
+                        {% else %}
+                            <li>
+                                <i class="fas fa-globe"></i>
+                                <span>Battalion-Wide</span>
+                            </li>
+                        {% endif %}
+                        {% if album.event %}
+                            <li>
+                                <i class="fas fa-calendar-day"></i>
+                                <a href="{% url 'events:event_detail' album.event.pk %}"
+                                   style="color:var(--bb-blue);text-decoration:none;">
+                                    {{ album.event.title }}
+                                </a>
+                            </li>
+                        {% endif %}
+                        <li>
+                            <i class="far fa-clock"></i>
+                            <span>{{ album.created_at|date:"j F Y" }}</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Related albums -->
+                {% if related_albums %}
+                    <div class="album-meta-card">
+                        <h3 class="album-meta-title">
+                            <i class="fas fa-th-large fa-sm"></i> More Albums
+                        </h3>
+                        {% for rel in related_albums %}
+                            <a href="{% url 'gallery:album_detail' rel.pk %}"
+                               style="display:flex;align-items:center;gap:10px;padding:8px 0;
+                                      border-bottom:1px solid var(--bg-section);text-decoration:none;
+                                      color:var(--text-body);">
+                                <!-- thumb -->
+                                <div style="width:48px;height:36px;border-radius:6px;overflow:hidden;
+                                            background:var(--bb-blue-dark);flex-shrink:0;">
+                                    {% if rel.cover_photo %}
+                                        <img src="{{ rel.cover_photo.url }}" alt="{{ rel.title }}"
+                                             style="width:100%;height:100%;object-fit:cover;">
+                                    {% else %}
+                                        <div style="width:100%;height:100%;display:flex;align-items:center;
+                                                    justify-content:center;color:rgba(255,255,255,.3);">
+                                            <i class="fas fa-image fa-sm"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <span style="font-size:.85rem;font-weight:600;line-height:1.3;">
+                                    {{ rel.title|truncatechars:36 }}
+                                </span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <!-- Back link -->
+                <div style="text-align:center;">
+                    <a href="{% url 'gallery:gallery_list' %}" class="btn btn-outline" style="width:100%;justify-content:center;">
+                        <i class="fas fa-th-large"></i> All Albums
+                    </a>
+                </div>
+
+            </aside>
+
+        </div><!-- /album-detail-layout -->
+    </div>
+</div>
+
+
+<!-- ================================================================
+     LIGHTBOX — pure vanilla JS, no external library
+     Features:
+       • Click thumbnail → open
+       • Prev / Next arrow buttons
+       • Keyboard: ← → navigate, Escape closes
+       • Click outside image → close
+       • Caption + counter display
+       • Fade transition on image swap
+================================================================ -->
+<div class="lightbox-overlay" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
+
+    <!-- Close button -->
+    <button class="lightbox-close" id="lbClose" aria-label="Close lightbox">
+        <i class="fas fa-times"></i>
+    </button>
+
+    <!-- Image wrapper with prev/next inside -->
+    <div class="lightbox-img-wrapper" id="lbImgWrapper">
+        <button class="lightbox-btn lightbox-btn--prev" id="lbPrev" aria-label="Previous photo">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+
+        <img src="" alt="" id="lbImg">
+
+        <button class="lightbox-btn lightbox-btn--next" id="lbNext" aria-label="Next photo">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <div class="lightbox-caption" id="lbCaption"></div>
+    <div class="lightbox-counter" id="lbCounter"></div>
+</div>
+
+
+{% endblock %}
+
+
+{% block extra_js %}
+{% if photos %}
+<script>
+(function () {
+    'use strict';
+
+    /* ----------------------------------------------------------------
+       Build the data array from DOM attributes
+    ---------------------------------------------------------------- */
+    const items = Array.from(
+        document.querySelectorAll('#photoGrid .photo-grid-item')
+    ).map(el => ({
+        src:     el.dataset.src,
+        caption: el.dataset.caption || '',
+    }));
+
+    let currentIndex = 0;
+
+    /* ----------------------------------------------------------------
+       DOM refs
+    ---------------------------------------------------------------- */
+    const overlay   = document.getElementById('lightbox');
+    const lbImg     = document.getElementById('lbImg');
+    const lbCaption = document.getElementById('lbCaption');
+    const lbCounter = document.getElementById('lbCounter');
+    const lbClose   = document.getElementById('lbClose');
+    const lbPrev    = document.getElementById('lbPrev');
+    const lbNext    = document.getElementById('lbNext');
+    const lbWrapper = document.getElementById('lbImgWrapper');
+
+    /* ----------------------------------------------------------------
+       Open / close helpers
+    ---------------------------------------------------------------- */
+    function open(index) {
+        currentIndex = ((index % items.length) + items.length) % items.length;
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        loadImage(currentIndex, false);
+        lbClose.focus();
+    }
+
+    function close() {
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    /* ----------------------------------------------------------------
+       Load image with optional fade transition
+    ---------------------------------------------------------------- */
+    function loadImage(index, animate) {
+        if (animate) {
+            lbImg.classList.add('lb-fade-out');
+            setTimeout(function () {
+                setImage(index);
+                lbImg.classList.remove('lb-fade-out');
+                lbImg.classList.add('lb-fade-in');
+                setTimeout(function () {
+                    lbImg.classList.remove('lb-fade-in');
+                }, 200);
+            }, 150);
+        } else {
+            setImage(index);
+        }
+    }
+
+    function setImage(index) {
+        const item   = items[index];
+        lbImg.src    = item.src;
+        lbImg.alt    = item.caption || 'Photo ' + (index + 1);
+        lbCaption.textContent = item.caption;
+        lbCounter.textContent = (index + 1) + ' / ' + items.length;
+
+        /* Hide arrows when only one photo */
+        lbPrev.style.display = items.length > 1 ? '' : 'none';
+        lbNext.style.display = items.length > 1 ? '' : 'none';
+    }
+
+    /* ----------------------------------------------------------------
+       Navigate
+    ---------------------------------------------------------------- */
+    function prev() {
+        currentIndex = ((currentIndex - 1) + items.length) % items.length;
+        loadImage(currentIndex, true);
+    }
+
+    function next() {
+        currentIndex = (currentIndex + 1) % items.length;
+        loadImage(currentIndex, true);
+    }
+
+    /* ----------------------------------------------------------------
+       Event listeners — thumbnails
+    ---------------------------------------------------------------- */
+    document.querySelectorAll('#photoGrid .photo-grid-item').forEach(function (el) {
+        el.addEventListener('click', function () {
+            open(parseInt(el.dataset.index, 10));
+        });
+        el.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                open(parseInt(el.dataset.index, 10));
+            }
+        });
+    });
+
+    /* ----------------------------------------------------------------
+       Lightbox controls
+    ---------------------------------------------------------------- */
+    lbClose.addEventListener('click', close);
+    lbPrev.addEventListener('click', function (e) { e.stopPropagation(); prev(); });
+    lbNext.addEventListener('click', function (e) { e.stopPropagation(); next(); });
+
+    /* Click outside image closes the lightbox */
+    overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) { close(); }
+    });
+
+    /* Keyboard navigation */
+    document.addEventListener('keydown', function (e) {
+        if (!overlay.classList.contains('active')) { return; }
+        if (e.key === 'ArrowLeft')  { prev(); }
+        if (e.key === 'ArrowRight') { next(); }
+        if (e.key === 'Escape')     { close(); }
+    });
+
+    /* ----------------------------------------------------------------
+       Touch / swipe support for mobile
+    ---------------------------------------------------------------- */
+    let touchStartX = 0;
+    overlay.addEventListener('touchstart', function (e) {
+        touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    overlay.addEventListener('touchend', function (e) {
+        const dx = e.changedTouches[0].screenX - touchStartX;
+        if (Math.abs(dx) > 50) {
+            if (dx < 0) { next(); } else { prev(); }
+        }
+    }, { passive: true });
+
+}());
+</script>
+{% endif %}
+{% endblock %}

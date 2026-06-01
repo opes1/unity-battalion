@@ -1,0 +1,132 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block extra_dash_css %}
+.company-logo-thumb {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    object-fit: cover;
+    background: var(--dash-content-bg);
+}
+.company-logo-placeholder {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--dash-content-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--dash-text-muted);
+    font-size: .85rem;
+}
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="dash-page-header">
+    <div>
+        <h1 class="dash-page-title">Companies</h1>
+        <p class="dash-page-subtitle">{{ companies|length }} compan{{ companies|length|pluralize:"y,ies" }} registered</p>
+    </div>
+</div>
+
+<div class="dash-card">
+    {% if companies %}
+        <table class="dash-table">
+            <thead>
+                <tr>
+                    <th>Company</th>
+                    <th>Church</th>
+                    <th>Meeting</th>
+                    <th>Sections</th>
+                    <th>Admins</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for co in companies %}
+                    <tr>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                {% if co.logo %}
+                                    <img src="{{ co.logo.url }}" alt="{{ co.name }}" class="company-logo-thumb">
+                                {% else %}
+                                    <div class="company-logo-placeholder">
+                                        <i class="fas fa-shield-alt"></i>
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <div style="font-weight:700;font-size:.88rem;">{{ co.name }}</div>
+                                    {% if co.location %}
+                                        <div style="font-size:.75rem;color:var(--dash-text-muted);">
+                                            {{ co.location|truncatechars:40 }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td style="font-size:.85rem;">{{ co.church }}</td>
+                        <td style="font-size:.82rem;white-space:nowrap;">
+                            {{ co.get_meeting_day_display }}<br>
+                            <span style="color:var(--dash-text-muted);">{{ co.meeting_time|time:"g:i A" }}</span>
+                        </td>
+                        <td>
+                            {% for s in co.sections_display %}
+                                <span class="status-badge status-badge--read" style="margin:2px 2px 0 0;display:inline-flex;">
+                                    {{ s }}
+                                </span>
+                            {% empty %}
+                                <span style="color:var(--dash-text-muted);font-size:.8rem;">—</span>
+                            {% endfor %}
+                        </td>
+                        <td style="text-align:center;">
+                            <span style="font-weight:700;">{{ co.admins.count }}</span>
+                        </td>
+                        <td>
+                            {% if co.is_active %}
+                                <span class="status-badge status-badge--active">
+                                    <i class="fas fa-circle" style="font-size:.4rem;"></i> Active
+                                </span>
+                            {% else %}
+                                <span class="status-badge status-badge--inactive">
+                                    <i class="fas fa-circle" style="font-size:.4rem;"></i> Inactive
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+                                <a href="{% url 'dashboard:edit_company' co.pk %}"
+                                   class="btn-dash btn-dash--outline btn-dash--sm">
+                                    <i class="fas fa-pen"></i> Edit
+                                </a>
+                                <form method="post" action="{% url 'dashboard:toggle_company' co.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                            class="btn-dash btn-dash--sm {% if co.is_active %}btn-dash--danger{% else %}btn-dash--success{% endif %}"
+                                            onclick="return confirm('{% if co.is_active %}Deactivate{% else %}Activate{% endif %} this company?')">
+                                        <i class="fas fa-{% if co.is_active %}ban{% else %}check{% endif %}"></i>
+                                        {% if co.is_active %}Deactivate{% else %}Activate{% endif %}
+                                    </button>
+                                </form>
+                                <a href="{% url 'companies:company_detail' co.pk %}"
+                                   target="_blank"
+                                   class="btn-dash btn-dash--outline btn-dash--sm"
+                                   title="View public page">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="dash-empty" style="padding:60px 20px;">
+            <i class="fas fa-shield-alt"></i>
+            <p>No companies have been registered yet.</p>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

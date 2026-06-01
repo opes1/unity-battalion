@@ -1,0 +1,277 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block extra_dash_css %}
+.form-field { margin-bottom: 18px; }
+.form-label {
+    display: block;
+    font-size: .8rem;
+    font-weight: 700;
+    color: var(--dash-text);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: 6px;
+}
+.form-label .req { color: var(--dash-red); margin-left: 2px; }
+.form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 10px 13px;
+    border: 1.5px solid var(--dash-border);
+    border-radius: var(--dash-radius);
+    font-family: var(--font-body);
+    font-size: .9rem;
+    color: var(--dash-text);
+    background: #fff;
+    transition: border-color .18s, box-shadow .18s;
+    outline: none;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--dash-blue);
+    box-shadow: 0 0 0 3px rgba(26,58,107,.1);
+}
+.form-input.is-error, .form-select.is-error {
+    border-color: var(--dash-red);
+    box-shadow: 0 0 0 3px rgba(192,57,43,.1);
+}
+.form-error {
+    font-size: .77rem;
+    color: var(--dash-red);
+    font-weight: 600;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.form-hint { font-size: .77rem; color: var(--dash-text-muted); margin-top: 4px; }
+.form-textarea { resize: vertical; min-height: 110px; }
+.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+.form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0 20px; }
+.form-check-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: .9rem;
+    font-weight: 600;
+    color: var(--dash-text);
+    padding: 10px 14px;
+    border-radius: var(--dash-radius);
+    border: 1.5px solid var(--dash-border);
+    background: #fff;
+    transition: border-color .15s, background .15s;
+    user-select: none;
+}
+.form-check-label:hover { border-color: var(--dash-blue); background: #f5f7fc; }
+.form-check-label input { accent-color: var(--dash-blue); width: 18px; height: 18px; }
+.form-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding-top: 10px;
+    border-top: 1px solid var(--dash-border);
+    margin-top: 6px;
+}
+.current-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: #f8f9fd;
+    border: 1px solid var(--dash-border);
+    border-radius: var(--dash-radius);
+    margin-bottom: 8px;
+    font-size: .84rem;
+}
+.current-banner img { height: 48px; border-radius: 4px; object-fit: cover; }
+@media (max-width: 700px) {
+    .form-grid-2, .form-grid-3 { grid-template-columns: 1fr; }
+}
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="dash-page-header">
+    <div>
+        <h1 class="dash-page-title">Edit Event</h1>
+        <p class="dash-page-subtitle">{{ event.title }}</p>
+    </div>
+    <div style="display:flex;gap:10px;">
+        <a href="{% url 'events:event_detail' event.pk %}" target="_blank" class="btn-dash btn-dash--outline">
+            <i class="fas fa-external-link-alt"></i> View Public
+        </a>
+        <a href="{% url 'dashboard:manage_events' %}" class="btn-dash btn-dash--outline">
+            <i class="fas fa-arrow-left"></i> Back to Events
+        </a>
+    </div>
+</div>
+
+<div class="dash-card">
+    <div class="dash-card-header">
+        <div class="dash-card-title">
+            <i class="fas fa-pen"></i> Edit Event Details
+        </div>
+        <span style="font-size:.78rem;color:var(--dash-text-muted);">
+            Created {{ event.created_at|date:"j M Y" }}
+            {% if event.created_by %} by {{ event.created_by.get_full_name|default:event.created_by.username }}{% endif %}
+        </span>
+    </div>
+    <div class="dash-card-body">
+        <form method="post"
+              action="{% url 'dashboard:edit_event' event.pk %}"
+              enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Title -->
+            <div class="form-field">
+                <label class="form-label" for="title">
+                    Event Title <span class="req">*</span>
+                </label>
+                <input type="text"
+                       id="title" name="title"
+                       class="form-input {% if errors.title %}is-error{% endif %}"
+                       value="{{ form_data.title }}"
+                       placeholder="e.g. Annual Battalion Inspection 2026">
+                {% if errors.title %}
+                    <div class="form-error"><i class="fas fa-exclamation-circle fa-xs"></i> {{ errors.title }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-grid-2">
+                <!-- Event type -->
+                <div class="form-field">
+                    <label class="form-label" for="event_type">
+                        Event Type <span class="req">*</span>
+                    </label>
+                    <select id="event_type" name="event_type"
+                            class="form-select {% if errors.event_type %}is-error{% endif %}">
+                        <option value="">— Select type —</option>
+                        {% for val, label in event_types %}
+                            <option value="{{ val }}" {% if form_data.event_type == val %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    {% if errors.event_type %}
+                        <div class="form-error"><i class="fas fa-exclamation-circle fa-xs"></i> {{ errors.event_type }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Company -->
+                <div class="form-field">
+                    <label class="form-label" for="company">Company</label>
+                    <select id="company" name="company"
+                            class="form-select {% if errors.company %}is-error{% endif %}">
+                        <option value="">— Battalion-Wide —</option>
+                        {% for co in companies %}
+                            <option value="{{ co.pk }}" {% if form_data.company|stringformat:"s" == co.pk|stringformat:"s" %}selected{% endif %}>
+                                {{ co.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    {% if errors.company %}
+                        <div class="form-error"><i class="fas fa-exclamation-circle fa-xs"></i> {{ errors.company }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-grid-3">
+                <!-- Date -->
+                <div class="form-field">
+                    <label class="form-label" for="date">
+                        Date <span class="req">*</span>
+                    </label>
+                    <input type="date"
+                           id="date" name="date"
+                           class="form-input {% if errors.date %}is-error{% endif %}"
+                           value="{{ form_data.date }}">
+                    {% if errors.date %}
+                        <div class="form-error"><i class="fas fa-exclamation-circle fa-xs"></i> {{ errors.date }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Start time -->
+                <div class="form-field">
+                    <label class="form-label" for="start_time">Start Time</label>
+                    <input type="time"
+                           id="start_time" name="start_time"
+                           class="form-input"
+                           value="{{ form_data.start_time }}">
+                </div>
+
+                <!-- End time -->
+                <div class="form-field">
+                    <label class="form-label" for="end_time">End Time</label>
+                    <input type="time"
+                           id="end_time" name="end_time"
+                           class="form-input"
+                           value="{{ form_data.end_time }}">
+                </div>
+            </div>
+
+            <!-- Location -->
+            <div class="form-field">
+                <label class="form-label" for="location">Location / Venue</label>
+                <input type="text"
+                       id="location" name="location"
+                       class="form-input"
+                       value="{{ form_data.location }}"
+                       placeholder="e.g. Unity Baptist Church Hall, Lagos">
+            </div>
+
+            <!-- Description -->
+            <div class="form-field">
+                <label class="form-label" for="description">Description</label>
+                <textarea id="description" name="description"
+                          class="form-textarea"
+                          placeholder="Details, dress code, instructions...">{{ form_data.description }}</textarea>
+            </div>
+
+            <!-- Banner -->
+            <div class="form-field">
+                <label class="form-label" for="banner">Banner Image</label>
+                {% if event.banner %}
+                    <div class="current-banner">
+                        <img src="{{ event.banner.url }}" alt="Current banner">
+                        <span style="color:var(--dash-text-muted);">Current banner — upload a new file to replace it.</span>
+                    </div>
+                {% endif %}
+                <input type="file"
+                       id="banner" name="banner"
+                       class="form-input"
+                       accept="image/*">
+                <div class="form-hint">Leave empty to keep the existing banner.</div>
+            </div>
+
+            <!-- Publish checkbox -->
+            <div class="form-field">
+                <label class="form-check-label">
+                    <input type="checkbox"
+                           name="is_published"
+                           {% if form_data.is_published %}checked{% endif %}>
+                    Published — visible on the public calendar
+                </label>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-dash btn-dash--primary" style="padding:10px 24px;font-size:.9rem;">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+                <a href="{% url 'dashboard:manage_events' %}" class="btn-dash btn-dash--outline" style="padding:10px 18px;font-size:.9rem;">
+                    Cancel
+                </a>
+                <!-- Danger zone delete -->
+                <form method="post" action="{% url 'dashboard:delete_event' event.pk %}" style="margin-left:auto;">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="btn-dash btn-dash--danger"
+                            style="padding:10px 18px;font-size:.9rem;"
+                            onclick="return confirm('Permanently delete this event? This cannot be undone.')">
+                        <i class="fas fa-trash"></i> Delete Event
+                    </button>
+                </form>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+{% endblock %}

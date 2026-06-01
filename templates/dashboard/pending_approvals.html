@@ -1,0 +1,246 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block extra_dash_css %}
+.proposed-data-list {
+    list-style: none;
+    font-size: .8rem;
+    padding: 8px 0 0;
+}
+.proposed-data-list li {
+    display: flex;
+    gap: 6px;
+    padding: 3px 0;
+    border-bottom: 1px solid var(--dash-border);
+}
+.proposed-data-list li:last-child { border-bottom: none; }
+.pd-key {
+    font-weight: 700;
+    color: var(--dash-blue);
+    text-transform: uppercase;
+    font-size: .68rem;
+    letter-spacing: .05em;
+    min-width: 90px;
+    flex-shrink: 0;
+    padding-top: 2px;
+}
+.pd-val {
+    color: var(--dash-text);
+    word-break: break-word;
+}
+/* Reject modal */
+.reject-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.45);
+    z-index: 9000;
+    align-items: center;
+    justify-content: center;
+}
+.reject-modal-overlay.open { display: flex; }
+.reject-modal {
+    background: #fff;
+    border-radius: 12px;
+    padding: 28px 28px 24px;
+    width: 90%;
+    max-width: 480px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.2);
+}
+.reject-modal h3 {
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--dash-text);
+    margin-bottom: 8px;
+}
+.reject-modal p { font-size: .88rem; color: var(--dash-text-muted); margin-bottom: 16px; }
+.reject-modal textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid var(--dash-border);
+    border-radius: 8px;
+    font-family: var(--font-body);
+    font-size: .9rem;
+    min-height: 90px;
+    resize: vertical;
+    box-sizing: border-box;
+    margin-bottom: 16px;
+}
+.reject-modal textarea:focus { outline: none; border-color: var(--dash-red); }
+.reject-modal-btns { display: flex; gap: 10px; justify-content: flex-end; }
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="dash-page-header">
+    <div>
+        <h1 class="dash-page-title">Pending Approvals</h1>
+        <p class="dash-page-subtitle">
+            {{ pending|length }} pending
+            request{{ pending|length|pluralize }}
+        </p>
+    </div>
+</div>
+
+<!-- Pending requests -->
+<div class="dash-card" style="margin-bottom:24px;">
+    <div class="dash-card-header">
+        <span class="dash-card-title">
+            <i class="fas fa-clock"></i> Awaiting Review
+        </span>
+    </div>
+
+    {% if pending %}
+        <table class="dash-table">
+            <thead>
+                <tr>
+                    <th>Company</th>
+                    <th>Requested By</th>
+                    <th>Date</th>
+                    <th>Proposed Changes</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in pending %}
+                    <tr id="req-{{ req.pk }}">
+                        <td>
+                            <div style="font-weight:700;">{{ req.company.name }}</div>
+                        </td>
+                        <td style="font-size:.85rem;">
+                            {{ req.requested_by.get_full_name|default:req.requested_by.username|default:"—" }}
+                        </td>
+                        <td style="font-size:.8rem;color:var(--dash-text-muted);white-space:nowrap;">
+                            {{ req.requested_at|date:"j M Y, g:i A" }}
+                        </td>
+                        <td>
+                            <ul class="proposed-data-list">
+                                {% for key, val in req.proposed_data.items %}
+                                    <li>
+                                        <span class="pd-key">{{ key }}</span>
+                                        <span class="pd-val">{{ val|truncatechars:50 }}</span>
+                                    </li>
+                                {% empty %}
+                                    <li style="color:var(--dash-text-muted);font-style:italic;">
+                                        No data attached.
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                        <td>
+                            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                                <form method="post"
+                                      action="{% url 'dashboard:approve_request' req.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                            class="btn-dash btn-dash--success btn-dash--sm"
+                                            onclick="return confirm('Approve and apply this update to {{ req.company.name }}?')">
+                                        <i class="fas fa-check"></i> Approve
+                                    </button>
+                                </form>
+                                <button type="button"
+                                        class="btn-dash btn-dash--danger btn-dash--sm"
+                                        onclick="openRejectModal({{ req.pk }}, '{{ req.company.name|escapejs }}')">
+                                    <i class="fas fa-times"></i> Reject
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="dash-empty" style="padding:50px 20px;">
+            <i class="fas fa-check-double"></i>
+            <p>No pending requests — you're all caught up!</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- History -->
+{% if history %}
+    <div class="dash-card">
+        <div class="dash-card-header">
+            <span class="dash-card-title">
+                <i class="fas fa-history"></i> Recent History
+            </span>
+        </div>
+        <table class="dash-table">
+            <thead>
+                <tr>
+                    <th>Company</th>
+                    <th>Requested By</th>
+                    <th>Status</th>
+                    <th>Reviewed By</th>
+                    <th>Reviewed</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in history %}
+                    <tr>
+                        <td style="font-weight:700;font-size:.85rem;">{{ req.company.name }}</td>
+                        <td style="font-size:.83rem;">
+                            {{ req.requested_by.get_full_name|default:req.requested_by.username|default:"—" }}
+                        </td>
+                        <td>
+                            <span class="status-badge status-badge--{{ req.status }}">
+                                {{ req.get_status_display }}
+                            </span>
+                        </td>
+                        <td style="font-size:.83rem;">
+                            {{ req.reviewed_by.get_full_name|default:"—" }}
+                        </td>
+                        <td style="font-size:.8rem;color:var(--dash-text-muted);white-space:nowrap;">
+                            {{ req.reviewed_at|date:"j M Y"|default:"—" }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+
+<!-- Reject modal -->
+<div class="reject-modal-overlay" id="rejectModalOverlay">
+    <div class="reject-modal">
+        <h3><i class="fas fa-times-circle" style="color:var(--dash-red);margin-right:6px;"></i>
+            Reject Update Request</h3>
+        <p>You are rejecting an update for <strong id="rejectCompanyName"></strong>.
+           Provide an optional reason so the company admin knows what to fix.</p>
+        <form method="post" id="rejectForm">
+            {% csrf_token %}
+            <textarea name="rejection_reason"
+                      placeholder="Reason for rejection (optional)…"></textarea>
+            <div class="reject-modal-btns">
+                <button type="button" class="btn-dash btn-dash--outline"
+                        onclick="closeRejectModal()">Cancel</button>
+                <button type="submit" class="btn-dash btn-dash--danger">
+                    <i class="fas fa-times"></i> Confirm Reject
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_dash_js %}
+<script>
+function openRejectModal(pk, companyName) {
+    document.getElementById('rejectCompanyName').textContent = companyName;
+    document.getElementById('rejectForm').action = '/super-dashboard/approvals/' + pk + '/reject/';
+    document.getElementById('rejectModalOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeRejectModal() {
+    document.getElementById('rejectModalOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+document.getElementById('rejectModalOverlay').addEventListener('click', function(e) {
+    if (e.target === this) { closeRejectModal(); }
+});
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { closeRejectModal(); }
+});
+</script>
+{% endblock %}

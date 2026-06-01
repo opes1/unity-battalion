@@ -1,0 +1,141 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block extra_dash_css %}
+.form-field { margin-bottom: 20px; }
+.form-label {
+    display: block;
+    font-size: .8rem;
+    font-weight: 700;
+    color: var(--dash-text);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: 6px;
+}
+.form-input, .form-textarea {
+    width: 100%;
+    padding: 10px 13px;
+    border: 1.5px solid var(--dash-border);
+    border-radius: var(--dash-radius);
+    font-family: var(--font-body);
+    font-size: .9rem;
+    color: var(--dash-text);
+    background: #fff;
+    transition: border-color .18s, box-shadow .18s;
+    outline: none;
+}
+.form-input:focus, .form-textarea:focus {
+    border-color: var(--dash-blue);
+    box-shadow: 0 0 0 3px rgba(26,58,107,.1);
+}
+.form-input.is-error { border-color: var(--dash-red); box-shadow: 0 0 0 3px rgba(192,57,43,.1); }
+.form-error { font-size: .77rem; color: var(--dash-red); font-weight: 600; margin-top: 4px; display: flex; align-items: center; gap: 4px; }
+.form-hint { font-size: .77rem; color: var(--dash-text-muted); margin-top: 4px; }
+.form-textarea { resize: vertical; min-height: 110px; }
+.form-actions {
+    display: flex; gap: 12px; align-items: center;
+    padding-top: 14px; border-top: 1px solid var(--dash-border); margin-top: 10px;
+}
+.icon-preview-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px; height: 42px;
+    background: var(--dash-blue);
+    color: #fff;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    margin-top: 8px;
+}
+{% endblock %}
+
+
+{% block dashboard_content %}
+
+<div class="dash-page-header">
+    <div>
+        <h1 class="dash-page-title">Add Core Value</h1>
+        <p class="dash-page-subtitle">New values appear on the About page, ordered by the Order field</p>
+    </div>
+    <a href="{% url 'dashboard:manage_core_values' %}" class="btn-dash btn-dash--outline">
+        <i class="fas fa-arrow-left"></i> Back to Core Values
+    </a>
+</div>
+
+<form method="post" action="{% url 'dashboard:add_core_value' %}">
+    {% csrf_token %}
+
+    <div class="dash-card">
+        <div class="dash-card-header">
+            <div class="dash-card-title">
+                <i class="fas fa-heart"></i> Core Value Details
+            </div>
+        </div>
+        <div class="dash-card-body">
+
+            <div class="form-field">
+                <label class="form-label" for="title">Title <span style="color:var(--dash-red);">*</span></label>
+                <input type="text" id="title" name="title"
+                       class="form-input {% if errors.title %}is-error{% endif %}"
+                       value="{{ form_data.title }}"
+                       placeholder="e.g. Faith, Service, Integrity"
+                       required>
+                {% if errors.title %}
+                    <div class="form-error"><i class="fas fa-exclamation-circle fa-xs"></i> {{ errors.title }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-field">
+                <label class="form-label" for="description">Description <span style="color:var(--dash-red);">*</span></label>
+                <textarea id="description" name="description"
+                          class="form-textarea {% if errors.description %}is-error{% endif %}"
+                          placeholder="A short paragraph describing this value…"
+                          required>{{ form_data.description }}</textarea>
+                {% if errors.description %}
+                    <div class="form-error"><i class="fas fa-exclamation-circle fa-xs"></i> {{ errors.description }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-field">
+                <label class="form-label" for="icon">Font Awesome Icon Class</label>
+                <input type="text" id="icon" name="icon"
+                       class="form-input"
+                       value="{{ form_data.icon|default:'fas fa-star' }}"
+                       placeholder="fas fa-star"
+                       oninput="document.getElementById('icon-live').className = this.value;">
+                <div class="form-hint">
+                    Enter a Font Awesome 6 class, e.g. <code>fas fa-cross</code>, <code>fas fa-heart</code>, <code>fas fa-hands-helping</code>.
+                    Browse icons at <strong>fontawesome.com/icons</strong>.
+                </div>
+                <div class="icon-preview-box">
+                    <i id="icon-live" class="{{ form_data.icon|default:'fas fa-star' }}"></i>
+                </div>
+            </div>
+
+            <div class="form-field" style="max-width:180px;">
+                <label class="form-label" for="order">Display Order</label>
+                <input type="number" id="order" name="order"
+                       class="form-input"
+                       value="{{ form_data.order|default:0 }}"
+                       min="0" max="999">
+                <div class="form-hint">Lower numbers appear first.</div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="dash-card" style="margin-top:18px;">
+        <div class="dash-card-body">
+            <div class="form-actions">
+                <button type="submit" class="btn-dash btn-dash--primary" style="padding:11px 28px;font-size:.92rem;">
+                    <i class="fas fa-save"></i> Save Core Value
+                </button>
+                <a href="{% url 'dashboard:manage_core_values' %}" class="btn-dash btn-dash--outline" style="padding:11px 18px;font-size:.92rem;">
+                    Cancel
+                </a>
+            </div>
+        </div>
+    </div>
+
+</form>
+
+{% endblock %}

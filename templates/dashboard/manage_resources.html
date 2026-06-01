@@ -1,0 +1,136 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block extra_dash_css %}
+.cat-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: .7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+.cat-chip--officers { background: #eef3fb; color: var(--dash-blue); }
+.cat-chip--parents  { background: #f3eefb; color: #7b41c8; }
+.cat-chip--boys     { background: #e8f8ef; color: #1a6b3a; }
+.cat-chip--general  { background: #fef4e6; color: #8a5a00; }
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="dash-page-header">
+    <div>
+        <h1 class="dash-page-title">Resources Management</h1>
+        <p class="dash-page-subtitle">{{ resources|length }} resource{{ resources|length|pluralize }}</p>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <a href="{% url 'dashboard:add_resource' %}" class="btn-dash btn-dash--primary">
+            <i class="fas fa-plus"></i> Add Resource
+        </a>
+        <a href="{% url 'resources:resources_list' %}" target="_blank" class="btn-dash btn-dash--outline">
+            <i class="fas fa-external-link-alt"></i> View Public Page
+        </a>
+    </div>
+</div>
+
+<div class="dash-card">
+    {% if resources %}
+        <table class="dash-table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Audience</th>
+                    <th>File</th>
+                    <th>Uploaded</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for res in resources %}
+                    <tr>
+                        <td>
+                            <div style="font-weight:700;font-size:.88rem;">{{ res.title }}</div>
+                            {% if res.description %}
+                                <div style="font-size:.75rem;color:var(--dash-text-muted);">
+                                    {{ res.description|truncatechars:55 }}
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="cat-chip cat-chip--{{ res.category }}">
+                                {{ res.get_category_display }}
+                            </span>
+                        </td>
+                        <td style="font-size:.83rem;">
+                            {{ res.get_audience_display }}
+                        </td>
+                        <td style="font-size:.8rem;">
+                            {% if res.file %}
+                                <a href="{{ res.file.url }}"
+                                   target="_blank"
+                                   style="color:var(--dash-blue);display:flex;align-items:center;gap:5px;">
+                                    <i class="fas fa-file-alt fa-xs"></i>
+                                    {{ res.file.size|filesizeformat }}
+                                </a>
+                            {% else %}
+                                <span style="color:var(--dash-text-muted);">No file</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-size:.78rem;color:var(--dash-text-muted);white-space:nowrap;">
+                            {{ res.uploaded_at|date:"j M Y" }}
+                        </td>
+                        <td>
+                            {% if res.is_published %}
+                                <span class="status-badge status-badge--published">Published</span>
+                            {% else %}
+                                <span class="status-badge status-badge--draft">Draft</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+                                <!-- Toggle publish -->
+                                <form method="post" action="{% url 'dashboard:toggle_resource' res.pk %}">
+                                    {% csrf_token %}
+                                    {% if res.is_published %}
+                                        <button type="submit" class="btn-dash btn-dash--outline btn-dash--sm"
+                                                onclick="return confirm('Unpublish this resource?')">
+                                            <i class="fas fa-eye-slash"></i> Unpublish
+                                        </button>
+                                    {% else %}
+                                        <button type="submit" class="btn-dash btn-dash--success btn-dash--sm"
+                                                onclick="return confirm('Publish this resource?')">
+                                            <i class="fas fa-eye"></i> Publish
+                                        </button>
+                                    {% endif %}
+                                </form>
+                                <!-- Delete -->
+                                <form method="post" action="{% url 'dashboard:delete_resource' res.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit"
+                                            class="btn-dash btn-dash--danger btn-dash--sm"
+                                            onclick="return confirm('Delete this resource? This cannot be undone.')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="dash-empty" style="padding:60px 20px;">
+            <i class="fas fa-file-download"></i>
+            <p>No resources have been uploaded yet.</p>
+            <a href="{% url 'dashboard:add_resource' %}" class="btn-dash btn-dash--primary" style="margin-top:16px;">
+                <i class="fas fa-plus"></i> Add First Resource
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

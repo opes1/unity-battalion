@@ -1,0 +1,300 @@
+{% extends 'dashboard/base_company_dashboard.html' %}
+
+{% block extra_dash_css %}
+.req-card {
+    background: var(--dash-card-bg);
+    border-radius: var(--dash-radius-lg);
+    box-shadow: var(--dash-shadow);
+    margin-bottom: 16px;
+    overflow: hidden;
+    border-left: 4px solid transparent;
+    transition: box-shadow .18s;
+}
+
+.req-card:hover { box-shadow: var(--dash-shadow-lg); }
+
+.req-card--pending  { border-left-color: #e67e22; }
+.req-card--approved { border-left-color: #1a6b3a; }
+.req-card--rejected { border-left-color: var(--dash-red); }
+
+.req-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 20px 10px;
+    border-bottom: 1px solid var(--dash-border);
+    flex-wrap: wrap;
+}
+
+.req-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: .8rem;
+    color: var(--dash-text-muted);
+    flex-wrap: wrap;
+}
+
+.req-card-meta strong {
+    font-family: var(--font-heading);
+    font-size: .9rem;
+    font-weight: 700;
+    color: var(--dash-text);
+}
+
+.req-card-body { padding: 16px 20px; }
+
+/* Proposed changes grid */
+.changes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+}
+
+.change-item {
+    background: #f8f9fd;
+    border: 1px solid var(--dash-border);
+    border-radius: var(--dash-radius);
+    padding: 10px 12px;
+}
+
+.change-field {
+    font-size: .68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--dash-text-muted);
+    margin-bottom: 4px;
+}
+
+.change-value {
+    font-size: .84rem;
+    color: var(--dash-text);
+    font-weight: 600;
+    word-break: break-word;
+}
+
+/* Rejection reason box */
+.rejection-box {
+    background: #fdf0f0;
+    border: 1px solid #f5c6c2;
+    border-radius: var(--dash-radius);
+    padding: 12px 16px;
+    margin-top: 12px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.rejection-box-label {
+    font-size: .75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--dash-red);
+    margin-bottom: 3px;
+}
+
+.rejection-box-text {
+    font-size: .85rem;
+    color: #6e1f18;
+    line-height: 1.5;
+}
+
+/* Review info */
+.review-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .78rem;
+    color: var(--dash-text-muted);
+    margin-top: 10px;
+}
+
+/* Summary counts */
+.req-summary {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+}
+
+.req-summary-chip {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--dash-card-bg);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: .8rem;
+    font-weight: 700;
+    box-shadow: var(--dash-shadow);
+}
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="dash-page-header">
+    <div>
+        <h1 class="dash-page-title">My Requests</h1>
+        <p class="dash-page-subtitle">
+            Update requests submitted for {{ company.name }}
+        </p>
+    </div>
+    <a href="{% url 'dashboard:edit_company_info' %}" class="btn-dash btn-dash--primary">
+        <i class="fas fa-plus"></i> New Request
+    </a>
+</div>
+
+{% if requests_list %}
+
+    <!-- Summary chips -->
+    {% with total=requests_list|length %}
+    <div class="req-summary">
+        <div class="req-summary-chip">
+            <i class="fas fa-list" style="color:var(--dash-text-muted);"></i>
+            <span>{{ total }} total request{{ total|pluralize }}</span>
+        </div>
+        {% with pending_count=co_pending_requests %}
+        {% if pending_count %}
+            <div class="req-summary-chip" style="background:#fef4e6;color:#8a5a00;">
+                <i class="fas fa-clock"></i>
+                <span>{{ pending_count }} pending</span>
+            </div>
+        {% endif %}
+        {% endwith %}
+    </div>
+    {% endwith %}
+
+    {% for req in requests_list %}
+
+        <div class="req-card req-card--{{ req.status }}">
+
+            <div class="req-card-header">
+                <div class="req-card-meta">
+                    <strong>Request #{{ req.pk }}</strong>
+                    <span><i class="fas fa-calendar-alt fa-xs"></i> {{ req.requested_at|date:"j M Y, g:i A" }}</span>
+                    {% if req.requested_by %}
+                        <span><i class="fas fa-user fa-xs"></i> {{ req.requested_by.get_full_name|default:req.requested_by.username }}</span>
+                    {% endif %}
+                </div>
+                <div>
+                    {% if req.status == 'pending' %}
+                        <span class="status-badge status-badge--pending">
+                            <i class="fas fa-clock fa-xs"></i> Pending Review
+                        </span>
+                    {% elif req.status == 'approved' %}
+                        <span class="status-badge status-badge--approved">
+                            <i class="fas fa-check-circle fa-xs"></i> Approved
+                        </span>
+                    {% else %}
+                        <span class="status-badge status-badge--rejected">
+                            <i class="fas fa-times-circle fa-xs"></i> Rejected
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="req-card-body">
+
+                <!-- Proposed changes -->
+                <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--dash-text-muted);margin-bottom:10px;">
+                    Proposed Changes ({{ req.proposed_data|length }} field{{ req.proposed_data|length|pluralize }})
+                </div>
+
+                {% if req.proposed_data %}
+                    <div class="changes-grid">
+                        {% for field, value in req.proposed_data.items %}
+                            <div class="change-item">
+                                <div class="change-field">
+                                    {% if field == 'about' %}About
+                                    {% elif field == 'church' %}Church / Sponsor
+                                    {% elif field == 'location' %}Location
+                                    {% elif field == 'meeting_day' %}Meeting Day
+                                    {% elif field == 'meeting_time' %}Meeting Time
+                                    {% elif field == 'sections_offered' %}Sections
+                                    {% elif field == 'phone' %}Phone
+                                    {% elif field == 'email' %}Email
+                                    {% else %}{{ field|title }}{% endif %}
+                                </div>
+                                <div class="change-value">
+                                    {% if value is not None %}
+                                        {% if field == 'sections_offered' %}
+                                            {% if value %}
+                                                {{ value|join:", " }}
+                                            {% else %}
+                                                <em style="color:var(--dash-text-muted);">None selected</em>
+                                            {% endif %}
+                                        {% elif field == 'about' %}
+                                            <span style="font-size:.8rem;font-weight:400;">{{ value|truncatechars:80 }}</span>
+                                        {% else %}
+                                            {{ value }}
+                                        {% endif %}
+                                    {% else %}
+                                        <em style="color:var(--dash-text-muted);">Cleared</em>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p style="font-size:.84rem;color:var(--dash-text-muted);">No proposed data recorded.</p>
+                {% endif %}
+
+                <!-- Rejection reason -->
+                {% if req.status == 'rejected' %}
+                    <div class="rejection-box">
+                        <i class="fas fa-times-circle" style="color:var(--dash-red);margin-top:2px;flex-shrink:0;"></i>
+                        <div>
+                            <div class="rejection-box-label">Rejection Reason</div>
+                            <div class="rejection-box-text">
+                                {% if req.rejection_reason %}
+                                    {{ req.rejection_reason }}
+                                {% else %}
+                                    <em>No reason provided.</em>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Review info -->
+                {% if req.reviewed_at %}
+                    <div class="review-info">
+                        <i class="fas fa-user-check fa-xs"></i>
+                        {% if req.status == 'approved' %}Approved{% else %}Reviewed{% endif %}
+                        on {{ req.reviewed_at|date:"j M Y, g:i A" }}
+                        {% if req.reviewed_by %}
+                            by {{ req.reviewed_by.get_full_name|default:req.reviewed_by.username }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                <!-- If pending — helpful note -->
+                {% if req.status == 'pending' %}
+                    <div style="margin-top:12px;font-size:.8rem;color:#8a5a00;display:flex;align-items:center;gap:6px;">
+                        <i class="fas fa-info-circle fa-xs"></i>
+                        Awaiting review — you cannot submit new changes until this is resolved.
+                    </div>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    {% endfor %}
+
+{% else %}
+    <div class="dash-card">
+        <div class="dash-empty" style="padding:70px 20px;">
+            <i class="fas fa-history"></i>
+            <p>No update requests have been submitted yet.</p>
+            <a href="{% url 'dashboard:edit_company_info' %}" class="btn-dash btn-dash--primary" style="margin-top:16px;padding:10px 22px;">
+                <i class="fas fa-pen"></i> Submit Your First Request
+            </a>
+        </div>
+    </div>
+{% endif %}
+
+{% endblock %}

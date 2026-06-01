@@ -1,0 +1,226 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block extra_dash_css %}
+.form-label {
+    display: block;
+    font-size: .8rem;
+    font-weight: 700;
+    color: var(--dash-text);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: 6px;
+}
+.form-hint { font-size: .77rem; color: var(--dash-text-muted); margin-top: 4px; }
+.form-actions {
+    display: flex; gap: 12px; align-items: center;
+    padding-top: 14px; border-top: 1px solid var(--dash-border); margin-top: 8px;
+}
+
+/* ---- Album info strip ---- */
+.album-info-strip {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #eef3fb;
+    border: 1px solid #c8d9f5;
+    border-radius: var(--dash-radius);
+    padding: 14px 18px;
+    margin-bottom: 22px;
+}
+.album-info-strip img {
+    width: 56px; height: 56px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid var(--dash-border);
+    flex-shrink: 0;
+}
+.album-info-strip-placeholder {
+    width: 56px; height: 56px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, var(--dash-blue), #0f2b52);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.album-info-strip-placeholder i { color: rgba(255,255,255,.35); font-size: 1.1rem; }
+.album-info-title { font-weight: 700; font-size: .95rem; color: var(--dash-text); }
+.album-info-meta  { font-size: .78rem; color: var(--dash-text-muted); margin-top: 2px; }
+
+/* ---- Drop zone ---- */
+.photo-drop-zone {
+    border: 2px dashed var(--dash-border);
+    border-radius: var(--dash-radius-lg);
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .18s, background .18s;
+    background: #fafbfd;
+    position: relative;
+}
+.photo-drop-zone:hover,
+.photo-drop-zone.dragover {
+    border-color: var(--dash-blue);
+    background: #eef3fb;
+}
+.photo-drop-zone input[type="file"] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+.photo-drop-icon { font-size: 2.2rem; color: var(--dash-blue); opacity: .4; margin-bottom: 10px; }
+.photo-drop-text { font-size: .88rem; color: var(--dash-text-muted); }
+.photo-drop-text strong { color: var(--dash-blue); }
+
+/* ---- Preview grid ---- */
+.photo-preview-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+}
+.photo-preview-grid img {
+    width: 80px; height: 80px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 2px solid var(--dash-border);
+}
+.photo-count-badge {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: .78rem;
+    font-weight: 700;
+    color: var(--dash-blue);
+    background: #eef3fb;
+    border-radius: 20px;
+    padding: 3px 10px;
+}
+{% endblock %}
+
+
+{% block dashboard_content %}
+
+<div class="dash-page-header">
+    <div>
+        <h1 class="dash-page-title">Add Photos</h1>
+        <p class="dash-page-subtitle">Upload more photos to an existing album</p>
+    </div>
+    <a href="{% url 'dashboard:manage_gallery' %}" class="btn-dash btn-dash--outline">
+        <i class="fas fa-arrow-left"></i> Back to Gallery
+    </a>
+</div>
+
+<!-- Album summary strip -->
+<div class="album-info-strip">
+    {% if album.cover_photo %}
+        <img src="{{ album.cover_photo.url }}" alt="{{ album.title }}">
+    {% else %}
+        <div class="album-info-strip-placeholder"><i class="fas fa-images"></i></div>
+    {% endif %}
+    <div>
+        <div class="album-info-title">{{ album.title }}</div>
+        <div class="album-info-meta">
+            {{ album.company.name|default:"Battalion-Wide" }} &bull;
+            {% with count=album.items.count %}
+                {{ count }} photo{{ count|pluralize }} already in this album
+            {% endwith %}
+        </div>
+    </div>
+</div>
+
+<div class="dash-card">
+    <div class="dash-card-header">
+        <div class="dash-card-title">
+            <i class="fas fa-cloud-upload-alt"></i> Select Photos to Upload
+        </div>
+    </div>
+    <div class="dash-card-body">
+
+        <form method="post"
+              action="{% url 'dashboard:add_photos_to_album' album.pk %}"
+              enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Multi-file drop zone -->
+            <div style="margin-bottom: 18px;">
+                <label class="form-label" for="photos">Photos</label>
+                <div class="photo-drop-zone" id="dropZone">
+                    <input type="file"
+                           id="photos" name="photos"
+                           multiple accept="image/*" required>
+                    <div class="photo-drop-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                    <div class="photo-drop-text">
+                        <strong>Click to select photos</strong> or drag &amp; drop them here<br>
+                        <span style="font-size:.77rem;">JPEG, PNG, WebP — multiple files allowed</span>
+                    </div>
+                </div>
+                <div class="photo-preview-grid" id="photoPreview"></div>
+                <span class="photo-count-badge" id="photoCount" style="display:none;"></span>
+                <div class="form-hint">
+                    New photos are appended after any existing ones.
+                    The album cover is auto-set if it has none yet.
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-dash btn-dash--primary" style="padding:10px 24px;font-size:.9rem;">
+                    <i class="fas fa-upload"></i> Upload Photos
+                </button>
+                <a href="{% url 'dashboard:manage_gallery' %}" class="btn-dash btn-dash--outline" style="padding:10px 18px;font-size:.9rem;">
+                    Cancel
+                </a>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+(function () {
+    const input    = document.getElementById('photos');
+    const preview  = document.getElementById('photoPreview');
+    const badge    = document.getElementById('photoCount');
+    const dropZone = document.getElementById('dropZone');
+
+    function renderPreviews(files) {
+        preview.innerHTML = '';
+        if (!files.length) { badge.style.display = 'none'; return; }
+
+        Array.from(files).forEach(function (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = document.createElement('img');
+                img.src   = e.target.result;
+                img.title = file.name;
+                preview.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        });
+
+        badge.textContent = files.length + ' photo' + (files.length !== 1 ? 's' : '') + ' selected';
+        badge.style.display = 'inline-block';
+    }
+
+    input.addEventListener('change', function () {
+        renderPreviews(this.files);
+    });
+
+    ['dragenter', 'dragover'].forEach(function (evt) {
+        dropZone.addEventListener(evt, function (e) {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+    });
+    ['dragleave', 'drop'].forEach(function (evt) {
+        dropZone.addEventListener(evt, function (e) {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+        });
+    });
+    dropZone.addEventListener('drop', function (e) {
+        input.files = e.dataTransfer.files;
+        renderPreviews(e.dataTransfer.files);
+    });
+})();
+</script>
+{% endblock %}

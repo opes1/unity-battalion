@@ -1,0 +1,373 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Staff Login{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ================================================================
+   COMPANY ADMIN LOGIN PAGE
+================================================================ */
+.login-page {
+    min-height: calc(100vh - var(--nav-height) - var(--ticker-height) - 260px);
+    background: var(--bg-light);
+    display: flex;
+    align-items: center;
+    padding: 60px 0;
+}
+
+.login-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    max-width: 960px;
+    margin: 0 auto;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    width: 100%;
+}
+
+/* ---- Left decorative panel ---- */
+.login-panel {
+    background: linear-gradient(160deg, var(--bb-blue-dark) 0%, var(--bb-blue) 100%);
+    padding: 56px 44px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Decorative circles */
+.login-panel::before,
+.login-panel::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,.05);
+}
+.login-panel::before { width: 280px; height: 280px; top: -80px;  right: -80px; }
+.login-panel::after  { width: 200px; height: 200px; bottom: -60px; left: -60px; }
+
+.login-panel-logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 40px;
+    position: relative;
+    z-index: 1;
+}
+
+.login-panel-logo .logo-badge {
+    width: 52px;
+    height: 52px;
+}
+
+.login-panel-logo .logo-bb { font-size: 1.1rem; }
+
+.login-panel-brand {
+    display: flex;
+    flex-direction: column;
+}
+
+.login-panel-brand strong {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--bb-white);
+    line-height: 1.2;
+}
+
+.login-panel-brand span {
+    font-size: .7rem;
+    color: rgba(255,255,255,.55);
+    text-transform: uppercase;
+    letter-spacing: .8px;
+}
+
+.login-panel h2 {
+    font-size: 1.7rem;
+    font-weight: 900;
+    color: var(--bb-white);
+    margin-bottom: 14px;
+    line-height: 1.2;
+    position: relative;
+    z-index: 1;
+}
+
+.login-panel h2 span { color: var(--bb-gold); }
+
+.login-panel p {
+    color: rgba(255,255,255,.65);
+    font-size: .9rem;
+    line-height: 1.75;
+    margin-bottom: 32px;
+    position: relative;
+    z-index: 1;
+}
+
+.login-motto {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-heading);
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--bb-gold);
+    position: relative;
+    z-index: 1;
+}
+
+.login-motto::before {
+    content: '';
+    width: 24px;
+    height: 1.5px;
+    background: var(--bb-gold);
+    border-radius: 1px;
+}
+
+/* ---- Right form panel ---- */
+.login-form-panel {
+    background: var(--bb-white);
+    padding: 52px 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.login-form-header {
+    margin-bottom: 32px;
+}
+
+.login-form-header h3 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--bb-blue);
+    margin-bottom: 6px;
+}
+
+.login-form-header p {
+    font-size: .88rem;
+    color: var(--text-muted);
+}
+
+/* Error banner */
+.login-error {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #fdf2f2;
+    border: 1px solid #f5c6c6;
+    border-left: 4px solid var(--bb-red);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 24px;
+    font-size: .88rem;
+    color: #8b2020;
+    font-weight: 600;
+}
+
+.login-error i { flex-shrink: 0; margin-top: 1px; color: var(--bb-red); }
+
+/* Form fields */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    font-family: var(--font-heading);
+    font-size: .78rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    letter-spacing: .3px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.form-input-wrap {
+    position: relative;
+}
+
+.form-input-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: .88rem;
+    pointer-events: none;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 14px 12px 40px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    font-family: var(--font-body);
+    font-size: .9rem;
+    color: var(--text-dark);
+    background: var(--bb-white);
+    transition: var(--transition-fast);
+    outline: none;
+}
+
+.form-input:focus {
+    border-color: var(--bb-blue);
+    box-shadow: 0 0 0 3px rgba(26,58,107,.1);
+}
+
+.form-input::placeholder { color: #b0b7c8; }
+
+.form-submit {
+    width: 100%;
+    padding: 13px;
+    background: var(--bb-red);
+    color: var(--bb-white);
+    font-family: var(--font-heading);
+    font-size: .92rem;
+    font-weight: 700;
+    letter-spacing: .5px;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.form-submit:hover {
+    background: var(--bb-red-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(192,57,43,.35);
+}
+
+.form-submit:active { transform: translateY(0); }
+
+.login-footer-note {
+    text-align: center;
+    margin-top: 24px;
+    font-size: .8rem;
+    color: var(--text-muted);
+}
+
+.login-footer-note a {
+    color: var(--bb-blue);
+    font-weight: 600;
+}
+.login-footer-note a:hover { color: var(--bb-red); }
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+    .login-wrapper { grid-template-columns: 1fr; }
+    .login-panel   { display: none; }
+    .login-form-panel { padding: 40px 28px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="login-page">
+    <div class="container">
+        <div class="login-wrapper">
+
+            <!-- Left: decorative branding panel -->
+            <div class="login-panel">
+                <div class="login-panel-logo">
+                    <div style="width:80px;height:80px;border-radius:50%;background:#fff;
+                                border:2px solid rgba(255,255,255,0.25);overflow:hidden;
+                                display:flex;align-items:center;justify-content:center;
+                                padding:6px;flex-shrink:0;">
+                        <img src="{% static 'images/bb-logo.png' %}" alt="Boys Brigade Logo"
+                             style="width:100%;height:100%;object-fit:contain;">
+                    </div>
+                    <div class="login-panel-brand">
+                        <strong>Unity Battalion</strong>
+                        <span>Boys Brigade Council</span>
+                    </div>
+                </div>
+
+                <h2>Welcome<br>Back, <span>Officer.</span></h2>
+                <p>
+                    Sign in to manage your company's profile, submit updates,
+                    and stay connected with the battalion's activities.
+                </p>
+
+                <span class="login-motto">Sure and Stedfast</span>
+            </div>
+
+            <!-- Right: login form -->
+            <div class="login-form-panel">
+                <div class="login-form-header">
+                    <h3>Staff Login</h3>
+                    <p>Enter your credentials to access the dashboard.</p>
+                </div>
+
+                {% if error %}
+                <div class="login-error" role="alert">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ error }}
+                </div>
+                {% endif %}
+
+                <form method="post" action="{% url 'accounts:login' %}" novalidate>
+                    {% csrf_token %}
+
+                    {% if next %}
+                        <input type="hidden" name="next" value="{{ next }}">
+                    {% endif %}
+
+                    <div class="form-group">
+                        <label class="form-label" for="id_username">Username</label>
+                        <div class="form-input-wrap">
+                            <i class="fas fa-user form-input-icon"></i>
+                            <input
+                                type="text"
+                                id="id_username"
+                                name="username"
+                                class="form-input"
+                                value="{{ username }}"
+                                placeholder="Enter your username"
+                                autocomplete="username"
+                                required
+                                autofocus
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="id_password">Password</label>
+                        <div class="form-input-wrap">
+                            <i class="fas fa-lock form-input-icon"></i>
+                            <input
+                                type="password"
+                                id="id_password"
+                                name="password"
+                                class="form-input"
+                                placeholder="Enter your password"
+                                autocomplete="current-password"
+                                required
+                            >
+                        </div>
+                    </div>
+
+                    <button type="submit" class="form-submit">
+                        <i class="fas fa-sign-in-alt"></i> Sign In
+                    </button>
+                </form>
+
+                <p class="login-footer-note">
+                    Having trouble signing in?
+                    <a href="#">Contact the Administrator</a>
+                </p>
+            </div>
+
+        </div>
+    </div>
+</section>
+{% endblock %}

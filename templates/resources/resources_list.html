@@ -1,0 +1,503 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Resources & Downloads — Unity Battalion{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ---- Hero animation ---- */
+@keyframes resourceHeroBG {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+.resources-hero {
+    background: linear-gradient(135deg,
+        var(--bb-blue-dark) 0%,
+        var(--bb-blue) 45%,
+        var(--bb-red-dark) 100%);
+    background-size: 200% 200%;
+    animation: resourceHeroBG 14s ease infinite;
+    padding: 70px 0 56px;
+    text-align: center;
+    color: var(--bb-white);
+}
+
+/* ---- Hero text ---- */
+.resources-hero-tag {
+    display: inline-block;
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.2);
+    color: var(--bb-gold);
+    font-size: .8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 18px;
+}
+
+.resources-hero h1 {
+    font-family: var(--font-heading);
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 800;
+    margin: 0 0 14px;
+    color: var(--bb-white);
+}
+
+.resources-hero-sub {
+    font-size: 1.05rem;
+    color: rgba(255,255,255,.75);
+    max-width: 580px;
+    margin: 0 auto;
+    line-height: 1.7;
+}
+
+.resources-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .85rem;
+    color: rgba(255,255,255,.6);
+    justify-content: center;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+.resources-breadcrumb a {
+    color: rgba(255,255,255,.7);
+    text-decoration: none;
+    transition: color .2s;
+}
+.resources-breadcrumb a:hover { color: var(--bb-white); }
+.resources-breadcrumb .sep   { color: rgba(255,255,255,.3); }
+
+/* ---- Quick-jump nav ---- */
+.resources-jump-nav {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 28px;
+}
+
+.resources-jump-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: 2px solid rgba(255,255,255,.25);
+    background: rgba(255,255,255,.08);
+    color: rgba(255,255,255,.85);
+    font-family: var(--font-heading);
+    font-size: .82rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background .2s, border-color .2s, color .2s;
+}
+.resources-jump-btn:hover {
+    background: rgba(255,255,255,.18);
+    border-color: rgba(255,255,255,.5);
+    color: var(--bb-white);
+}
+
+/* ---- Page body ---- */
+.resources-page {
+    padding: 70px 0 90px;
+    background: var(--bg-light);
+}
+
+/* ---- Category section ---- */
+.resource-category {
+    margin-bottom: 60px;
+    scroll-margin-top: calc(var(--nav-height) + 20px);
+}
+
+.resource-category-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding: 22px 24px;
+    border-radius: var(--radius-lg);
+    color: var(--bb-white);
+    position: relative;
+    overflow: hidden;
+}
+
+.resource-category-header::after {
+    content: '';
+    position: absolute;
+    right: -20px;
+    top: -20px;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.06);
+}
+
+.resource-category-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: var(--radius);
+    background: rgba(255,255,255,.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+}
+
+.resource-category-info h2 {
+    font-family: var(--font-heading);
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--bb-white);
+    margin: 0 0 5px;
+}
+
+.resource-category-info p {
+    font-size: .9rem;
+    color: rgba(255,255,255,.8);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* ---- Resource grid (2 cols) ---- */
+.resource-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+}
+
+/* ---- Resource card ---- */
+.resource-card {
+    background: var(--bb-white);
+    border-radius: var(--radius-lg);
+    padding: 22px 20px 20px;
+    box-shadow: 0 2px 14px rgba(0,0,0,.06);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border-left: 4px solid transparent;
+    transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+}
+.resource-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 32px rgba(0,0,0,.11);
+}
+
+.resource-card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 12px;
+}
+
+.resource-file-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+    background: var(--bg-light);
+}
+
+.resource-title-block { flex: 1; min-width: 0; }
+
+.resource-card-title {
+    font-family: var(--font-heading);
+    font-size: .98rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0 0 6px;
+    line-height: 1.3;
+}
+
+.resource-badges {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.resource-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: .7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.resource-badge--ext {
+    background: var(--bg-section);
+    color: var(--text-muted);
+}
+
+.resource-badge--lock {
+    background: #fdf0f0;
+    color: var(--bb-red);
+    border: 1px solid #f8d0d0;
+}
+
+.resource-badge--audience {
+    background: #eef3fb;
+    color: var(--bb-blue);
+    border: 1px solid #d0ddf5;
+}
+
+.resource-card-desc {
+    font-size: .88rem;
+    color: var(--text-body);
+    line-height: 1.6;
+    margin: 0 0 14px;
+    flex: 1;
+}
+
+.resource-card-meta {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    font-size: .78rem;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--bg-section);
+}
+
+.resource-card-meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.resource-download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 18px;
+    border-radius: var(--radius);
+    background: var(--bb-blue);
+    color: var(--bb-white);
+    font-family: var(--font-heading);
+    font-size: .82rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background .2s, transform .2s;
+    align-self: flex-start;
+}
+.resource-download-btn:hover {
+    background: var(--bb-blue-dark);
+    transform: translateY(-1px);
+}
+
+.resource-no-file {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 18px;
+    border-radius: var(--radius);
+    background: var(--bg-section);
+    color: var(--text-muted);
+    font-size: .82rem;
+    font-weight: 600;
+    cursor: not-allowed;
+}
+
+/* ---- Empty state per category ---- */
+.resource-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px 20px;
+    background: var(--bb-white);
+    border-radius: var(--radius-lg);
+    color: var(--text-muted);
+    box-shadow: 0 2px 10px rgba(0,0,0,.04);
+}
+.resource-empty i {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 10px;
+    color: var(--border);
+}
+.resource-empty p { margin: 0; font-size: .9rem; }
+
+/* ---- Responsive ---- */
+@media (max-width: 760px) {
+    .resource-grid { grid-template-columns: 1fr; }
+    .resources-jump-nav { gap: 8px; }
+    .resources-jump-btn { font-size: .78rem; padding: 7px 14px; }
+}
+
+@media (max-width: 540px) {
+    .resource-category-header { flex-direction: column; gap: 12px; }
+    .resource-card-meta { gap: 10px; }
+}
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<!-- ================================================================
+     HERO
+================================================================ -->
+<section class="resources-hero">
+    <div class="container">
+        <div class="resources-hero-tag">
+            <i class="fas fa-download"></i> Downloads &amp; Materials
+        </div>
+        <h1>Resources &amp; Downloads</h1>
+        <p class="resources-hero-sub">
+            Everything you need: training manuals for officers, programme guides for boys,
+            parent information packs, and general council documents.
+        </p>
+        <nav class="resources-breadcrumb" aria-label="Breadcrumb">
+            <a href="{% url 'core:home' %}"><i class="fas fa-home fa-sm"></i> Home</a>
+            <span class="sep">/</span>
+            <span>Resources</span>
+        </nav>
+
+        <!-- Quick-jump anchors -->
+        <div class="resources-jump-nav">
+            {% for cat in categories %}
+                <a href="#category-{{ cat.key }}" class="resources-jump-btn">
+                    <i class="{{ cat.icon }}"></i> {{ cat.label }}
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+
+<!-- ================================================================
+     RESOURCES BODY
+================================================================ -->
+<div class="resources-page">
+    <div class="container">
+
+        {% for cat in categories %}
+            <div class="resource-category fade-in" id="category-{{ cat.key }}">
+
+                <!-- Category header banner -->
+                <div class="resource-category-header"
+                     style="background: linear-gradient(135deg, {{ cat.accent_bg }} 0%, {{ cat.accent }} 100%);">
+                    <div class="resource-category-icon">
+                        <i class="{{ cat.icon }}"></i>
+                    </div>
+                    <div class="resource-category-info">
+                        <h2>{{ cat.label }}</h2>
+                        <p>{{ cat.description }}</p>
+                    </div>
+                </div>
+
+                <!-- Resource grid -->
+                <div class="resource-grid">
+
+                    {% if cat.resources %}
+                        {% for resource in cat.resources %}
+                            <div class="resource-card"
+                                 style="border-left-color: {{ cat.accent }};">
+
+                                <!-- Top: file icon + title + badges -->
+                                <div class="resource-card-top">
+                                    <div class="resource-file-icon"
+                                         style="color:{{ resource.file_icon_color }};">
+                                        <i class="{{ resource.file_icon }}"></i>
+                                    </div>
+                                    <div class="resource-title-block">
+                                        <h3 class="resource-card-title">{{ resource.title }}</h3>
+                                        <div class="resource-badges">
+                                            {% if resource.file_ext %}
+                                                <span class="resource-badge resource-badge--ext">
+                                                    {{ resource.file_ext }}
+                                                </span>
+                                            {% endif %}
+                                            {% if resource.audience == 'officers' %}
+                                                <span class="resource-badge resource-badge--lock"
+                                                      title="Intended for officers only">
+                                                    <i class="fas fa-lock fa-xs"></i> Officers Only
+                                                </span>
+                                            {% elif resource.audience == 'parents' %}
+                                                <span class="resource-badge resource-badge--audience">
+                                                    <i class="fas fa-users fa-xs"></i> Parents
+                                                </span>
+                                            {% elif resource.audience == 'boys' %}
+                                                <span class="resource-badge resource-badge--audience">
+                                                    <i class="fas fa-child fa-xs"></i> Boys
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Description -->
+                                {% if resource.description %}
+                                    <p class="resource-card-desc">{{ resource.description }}</p>
+                                {% else %}
+                                    <p class="resource-card-desc" style="color:var(--text-muted);font-style:italic;">
+                                        No description available.
+                                    </p>
+                                {% endif %}
+
+                                <!-- Meta: date + size -->
+                                <div class="resource-card-meta">
+                                    <span>
+                                        <i class="far fa-calendar-alt"></i>
+                                        {{ resource.uploaded_at|date:"j M Y" }}
+                                    </span>
+                                    {% if resource.file %}
+                                        <span>
+                                            <i class="fas fa-hdd"></i>
+                                            {{ resource.file.size|filesizeformat }}
+                                        </span>
+                                    {% endif %}
+                                    {% if resource.updated_at != resource.uploaded_at %}
+                                        <span>
+                                            <i class="fas fa-sync-alt"></i>
+                                            Updated {{ resource.updated_at|date:"j M Y" }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Download button -->
+                                {% if resource.file %}
+                                    <a href="{{ resource.file.url }}"
+                                       class="resource-download-btn"
+                                       download
+                                       aria-label="Download {{ resource.title }}">
+                                        <i class="fas fa-download"></i> Download
+                                    </a>
+                                {% else %}
+                                    <span class="resource-no-file"
+                                          title="File not yet available">
+                                        <i class="fas fa-clock"></i> Coming Soon
+                                    </span>
+                                {% endif %}
+
+                            </div><!-- /resource-card -->
+                        {% endfor %}
+
+                    {% else %}
+                        <!-- Empty state for this category -->
+                        <div class="resource-empty">
+                            <i class="{{ cat.icon }}"></i>
+                            <p>No {{ cat.label|lower }} resources have been published yet.</p>
+                        </div>
+                    {% endif %}
+
+                </div><!-- /resource-grid -->
+            </div><!-- /resource-category -->
+        {% endfor %}
+
+    </div>
+</div>
+
+{% endblock %}

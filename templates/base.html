@@ -1,0 +1,302 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Unity Battalion Council, Boys Brigade Nigeria. Sure and Stedfast.">
+    <meta name="theme-color" content="#1A3A6B">
+
+    <title>{% block title %}Unity Battalion Council{% endblock %} | Boys Brigade</title>
+
+    <!-- Google Fonts: Montserrat (headings) + Open Sans (body) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome 6 — navbar social icons, section icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Global stylesheet -->
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- ============================================================
+         ANNOUNCEMENT TICKER
+         Scrolling bar at the very top for council-wide notices.
+    ============================================================ -->
+    <div class="ticker-bar" role="marquee" aria-label="Announcements">
+        <span class="ticker-label">
+            <i class="fas fa-bullhorn"></i>&nbsp; ANNOUNCEMENTS
+        </span>
+        <div class="ticker-track">
+            <div class="ticker-content">
+                Welcome to Unity Battalion Council - Boys Brigade &bull;&nbsp;
+                Annual Battalion Inspection - Save the Date &bull;&nbsp;
+                Register your company for the new season &bull;&nbsp;
+                &ldquo;Sure and Stedfast&rdquo; - The Boys Brigade Motto &bull;&nbsp;
+                Building Boys for Life since 1883 &bull;&nbsp;
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         STICKY NAVIGATION BAR
+    ============================================================ -->
+    <nav class="navbar" id="mainNav">
+        <div class="container nav-container">
+
+            <!-- Brand / Logo -->
+            <a href="{% url 'core:home' %}" class="nav-brand" aria-label="Unity Battalion Home">
+                <div class="nav-logo">
+                    <div style="width:50px;height:50px;border-radius:50%;background:#fff;
+                                border:2px solid rgba(255,255,255,0.3);overflow:hidden;
+                                display:flex;align-items:center;justify-content:center;
+                                padding:4px;flex-shrink:0;">
+                        <img src="{% static 'images/bb-logo.png' %}" alt="Boys Brigade Logo"
+                             style="width:100%;height:100%;object-fit:contain;">
+                    </div>
+                </div>
+                <div class="nav-brand-text">
+                    <span class="brand-main">Unity Battalion</span>
+                    <span class="brand-sub">Boys Brigade Council</span>
+                </div>
+            </a>
+
+            <!-- Desktop Navigation Links -->
+            <ul class="nav-links" id="navLinks" role="navigation">
+                <li><a href="{% url 'core:home' %}" class="nav-link">Home</a></li>
+                <li><a href="{% url 'core:about' %}" class="nav-link">About</a></li>
+                <li class="has-dropdown">
+                    <a href="{% url 'companies:companies_list' %}" class="nav-link dropdown-toggle">
+                        Companies <i class="fas fa-caret-down fa-xs"></i>
+                    </a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a href="{% url 'companies:companies_list' %}"><i class="fas fa-list fa-fw"></i> All Companies</a></li>
+                        <li><a href="{% url 'companies:companies_map' %}"><i class="fas fa-map-marker-alt fa-fw"></i> Company Map</a></li>
+                    </ul>
+                </li>
+                <li class="has-dropdown">
+                    <a href="{% url 'events:events_list' %}" class="nav-link dropdown-toggle">
+                        Events <i class="fas fa-caret-down fa-xs"></i>
+                    </a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a href="{% url 'events:events_list' %}"><i class="fas fa-list fa-fw"></i> All Events</a></li>
+                        <li><a href="{% url 'events:events_calendar' %}"><i class="fas fa-calendar-alt fa-fw"></i> Event Calendar</a></li>
+                    </ul>
+                </li>
+                <li><a href="{% url 'gallery:gallery_list' %}" class="nav-link">Gallery</a></li>
+                <li><a href="{% url 'resources:resources_list' %}" class="nav-link">Resources</a></li>
+                <li><a href="{% url 'core:contact' %}" class="nav-link">Contact</a></li>
+            </ul>
+
+            <!-- Right-side: social icons only -->
+            <div class="nav-right">
+                <div class="nav-social">
+                    <a href="{{ contact_info.facebook_url|default:'#' }}" class="nav-social-icon" aria-label="Facebook" {% if contact_info.facebook_url %}target="_blank" rel="noopener"{% endif %}>
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="{{ contact_info.instagram_url|default:'#' }}" class="nav-social-icon" aria-label="Instagram" {% if contact_info.instagram_url %}target="_blank" rel="noopener"{% endif %}>
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="{% if contact_info.whatsapp_number %}https://wa.me/{{ contact_info.whatsapp_number }}{% else %}#{% endif %}" class="nav-social-icon" aria-label="WhatsApp" {% if contact_info.whatsapp_number %}target="_blank" rel="noopener"{% endif %}>
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Mobile hamburger button -->
+            <button class="hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+        </div>
+    </nav>
+
+    <!-- ============================================================
+         MAIN CONTENT
+    ============================================================ -->
+    <main id="main-content">
+        {% if messages %}
+            <div class="messages-container container">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        <i class="fas fa-info-circle"></i> {{ message }}
+                        <button class="alert-close" aria-label="Close">&times;</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- ============================================================
+         FOOTER
+    ============================================================ -->
+    <footer class="footer">
+        <div class="footer-top">
+            <div class="container footer-grid">
+
+                <!-- Col 1: Brand -->
+                <div class="footer-col footer-brand-col">
+                    <div class="footer-logo">
+                        <div style="width:60px;height:60px;border-radius:50%;background:#fff;
+                                    border:2px solid rgba(255,255,255,0.2);overflow:hidden;
+                                    display:flex;align-items:center;justify-content:center;
+                                    padding:4px;flex-shrink:0;">
+                            <img src="{% static 'images/bb-logo.png' %}" alt="Boys Brigade Logo"
+                                 style="width:100%;height:100%;object-fit:contain;">
+                        </div>
+                        <div>
+                            <p class="footer-brand-name">Unity Battalion</p>
+                            <p class="footer-brand-sub">Boys Brigade Council</p>
+                        </div>
+                    </div>
+                    <p class="footer-tagline">
+                        {{ battalion_info.bb_object|default:"Advancing Christ's Kingdom among Boys and promoting habits of Obedience, Reverence, Discipline, Self-Respect and all that tends towards a true Christian manliness." }}
+                    </p>
+                    <p class="footer-motto">
+                        <i class="fas fa-quote-left"></i>
+                        {{ battalion_info.motto|default:"Sure and Stedfast" }}
+                        <i class="fas fa-quote-right"></i>
+                    </p>
+                    <div class="footer-social">
+                        <a href="{{ contact_info.facebook_url|default:'#' }}" aria-label="Facebook" class="footer-social-icon" {% if contact_info.facebook_url %}target="_blank" rel="noopener"{% endif %}><i class="fab fa-facebook-f"></i></a>
+                        <a href="{{ contact_info.instagram_url|default:'#' }}" aria-label="Instagram" class="footer-social-icon" {% if contact_info.instagram_url %}target="_blank" rel="noopener"{% endif %}><i class="fab fa-instagram"></i></a>
+                        <a href="{% if contact_info.whatsapp_number %}https://wa.me/{{ contact_info.whatsapp_number }}{% else %}#{% endif %}" aria-label="WhatsApp" class="footer-social-icon" {% if contact_info.whatsapp_number %}target="_blank" rel="noopener"{% endif %}><i class="fab fa-whatsapp"></i></a>
+                        <a href="#" aria-label="YouTube" class="footer-social-icon"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+
+                <!-- Col 2: Quick Links -->
+                <div class="footer-col">
+                    <h4 class="footer-heading">Quick Links</h4>
+                    <ul class="footer-links">
+                        <li><a href="{% url 'core:home' %}"><i class="fas fa-chevron-right"></i> Home</a></li>
+                        <li><a href="{% url 'core:about' %}"><i class="fas fa-chevron-right"></i> About Us</a></li>
+                        <li><a href="{% url 'companies:companies_list' %}"><i class="fas fa-chevron-right"></i> Our Companies</a></li>
+                        <li><a href="{% url 'events:events_calendar' %}"><i class="fas fa-chevron-right"></i> Events Calendar</a></li>
+                        <li><a href="{% url 'gallery:gallery_list' %}"><i class="fas fa-chevron-right"></i> Photo Gallery</a></li>
+                        <li><a href="{% url 'resources:resources_list' %}"><i class="fas fa-chevron-right"></i> Resources</a></li>
+                        <li><a href="{% url 'core:contact' %}"><i class="fas fa-chevron-right"></i> Contact Us</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 3: Contact -->
+                <div class="footer-col">
+                    <h4 class="footer-heading">Contact Us</h4>
+                    <ul class="footer-contact">
+                        <li>
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>{{ contact_info.address|default:"Unity Battalion Council Headquarters, Lagos, Nigeria"|linebreaksbr }}</span>
+                        </li>
+                        {% if contact_info.phone %}
+                        <li>
+                            <i class="fas fa-phone-alt"></i>
+                            <span>{{ contact_info.phone }}</span>
+                        </li>
+                        {% endif %}
+                        {% if contact_info.email %}
+                        <li>
+                            <i class="fas fa-envelope"></i>
+                            <span>{{ contact_info.email }}</span>
+                        </li>
+                        {% endif %}
+                        {% if contact_info.office_hours %}
+                        <li>
+                            <i class="fas fa-clock"></i>
+                            <span>{{ contact_info.office_hours }}</span>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Footer bottom bar -->
+        <div class="footer-bottom">
+            <div class="container footer-bottom-inner">
+                <p>
+                    &copy; {% now "Y" %} Unity Battalion Council, Boys Brigade.
+                    All rights reserved.
+                </p>
+                <p class="footer-bottom-links">
+                    <a href="#">Privacy Policy</a>
+                    <span>&bull;</span>
+                    <a href="#">Terms of Use</a>
+                    <span>&bull;</span>
+                    <a href="{% url 'accounts:login' %}" class="staff-login-link">Staff Login</a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ============================================================
+         JAVASCRIPT
+    ============================================================ -->
+    <script>
+        // ---- Sticky navbar shadow on scroll ----
+        const navbar = document.getElementById('mainNav');
+        window.addEventListener('scroll', () => {
+            navbar.classList.toggle('navbar--scrolled', window.scrollY > 60);
+        });
+
+        // ---- Mobile hamburger toggle ----
+        const hamburger = document.getElementById('hamburger');
+        const navLinks  = document.getElementById('navLinks');
+        hamburger.addEventListener('click', () => {
+            const open = hamburger.classList.toggle('hamburger--open');
+            navLinks.classList.toggle('nav-links--open', open);
+            hamburger.setAttribute('aria-expanded', open);
+        });
+
+        // Close mobile menu when a link is clicked
+        navLinks.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('hamburger--open');
+                navLinks.classList.remove('nav-links--open');
+                hamburger.setAttribute('aria-expanded', 'false');
+            });
+        });
+
+        // ---- Dropdown hover on desktop, click on mobile ----
+        document.querySelectorAll('.has-dropdown').forEach(item => {
+            const toggle = item.querySelector('.dropdown-toggle');
+            toggle.addEventListener('click', e => {
+                if (window.innerWidth < 992) {
+                    e.preventDefault();
+                    item.classList.toggle('dropdown--open');
+                }
+            });
+        });
+
+        // ---- Flash message close buttons ----
+        document.querySelectorAll('.alert-close').forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.closest('.alert').style.display = 'none';
+            });
+        });
+
+        // ---- Animate elements into view on scroll ----
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.15 });
+
+        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

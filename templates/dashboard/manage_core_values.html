@@ -1,0 +1,111 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block extra_dash_css %}
+.cv-icon-preview {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px; height: 36px;
+    background: var(--dash-blue);
+    color: #fff;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+.cv-desc-cell {
+    max-width: 320px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--dash-text-muted);
+    font-size: .83rem;
+}
+{% endblock %}
+
+
+{% block dashboard_content %}
+
+<div class="dash-page-header">
+    <div>
+        <h1 class="dash-page-title">Core Values</h1>
+        <p class="dash-page-subtitle">These values appear on the About page. Drag-to-reorder is managed via the Order field.</p>
+    </div>
+    <a href="{% url 'dashboard:add_core_value' %}" class="btn-dash btn-dash--primary">
+        <i class="fas fa-plus"></i> Add Core Value
+    </a>
+</div>
+
+{% if messages %}
+    {% for msg in messages %}
+        <div class="dash-alert dash-alert--{{ msg.tags }}" style="margin-bottom:16px;">
+            <i class="fas fa-check-circle"></i> {{ msg }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="dash-card">
+    <div class="dash-card-header">
+        <div class="dash-card-title">
+            <i class="fas fa-heart"></i> All Core Values
+            <span class="dash-badge" style="margin-left:8px;">{{ values|length }}</span>
+        </div>
+    </div>
+    <div class="dash-card-body" style="padding:0;">
+
+        {% if values %}
+        <div style="overflow-x:auto;">
+            <table class="dash-table">
+                <thead>
+                    <tr>
+                        <th style="width:60px;">Icon</th>
+                        <th>Title</th>
+                        <th>Description</th>
+                        <th style="width:70px;">Order</th>
+                        <th style="width:130px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for value in values %}
+                    <tr>
+                        <td>
+                            <div class="cv-icon-preview">
+                                <i class="{{ value.icon }}"></i>
+                            </div>
+                        </td>
+                        <td style="font-weight:600;">{{ value.title }}</td>
+                        <td class="cv-desc-cell">{{ value.description }}</td>
+                        <td style="text-align:center;">{{ value.order }}</td>
+                        <td>
+                            <div style="display:flex;gap:6px;">
+                                <a href="{% url 'dashboard:edit_core_value' value.pk %}"
+                                   class="btn-dash btn-dash--outline" style="padding:5px 11px;font-size:.78rem;">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="post" action="{% url 'dashboard:delete_core_value' value.pk %}"
+                                      onsubmit="return confirm('Delete this core value?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-dash btn-dash--danger" style="padding:5px 11px;font-size:.78rem;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="dash-empty-state" style="padding:48px 24px;">
+            <i class="fas fa-heart dash-empty-icon"></i>
+            <div class="dash-empty-title">No core values yet</div>
+            <div class="dash-empty-text">Add your first core value to display it on the About page.</div>
+            <a href="{% url 'dashboard:add_core_value' %}" class="btn-dash btn-dash--primary" style="margin-top:16px;">
+                <i class="fas fa-plus"></i> Add Core Value
+            </a>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+{% endblock %}

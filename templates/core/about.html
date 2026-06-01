@@ -1,0 +1,960 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}About Us{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ================================================================
+   ABOUT PAGE — scoped styles
+================================================================ */
+
+/* ---- Page hero ---- */
+.page-hero {
+    background: linear-gradient(135deg,
+        rgba(15, 36, 68, .97) 0%,
+        rgba(26, 58, 107, .92) 55%,
+        rgba(192, 57, 43, .18) 100%);
+    padding: 80px 0 72px;
+    position: relative;
+    overflow: hidden;
+}
+
+.page-hero::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0; right: 0;
+    height: 60px;
+    background: var(--bb-white);
+    clip-path: polygon(0 100%, 100% 30%, 100% 100%);
+}
+
+.page-hero-inner { position: relative; z-index: 1; }
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .78rem;
+    color: rgba(255,255,255,.5);
+    margin-bottom: 16px;
+    font-family: var(--font-heading);
+    font-weight: 600;
+    letter-spacing: .3px;
+}
+
+.breadcrumb a { color: rgba(255,255,255,.6); transition: var(--transition-fast); }
+.breadcrumb a:hover { color: var(--bb-white); }
+.breadcrumb i { font-size: .6rem; }
+
+.page-hero h1 {
+    color: var(--bb-white);
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 900;
+    line-height: 1.15;
+    margin-bottom: 12px;
+}
+
+.page-hero h1 span { color: var(--bb-red); }
+
+.page-hero-sub {
+    font-family: var(--font-heading);
+    font-size: .85rem;
+    font-weight: 700;
+    color: var(--bb-gold);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.page-hero-sub::before {
+    content: '';
+    width: 24px;
+    height: 2px;
+    background: var(--bb-gold);
+    border-radius: 1px;
+}
+
+/* ---- History section ---- */
+.history-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 64px;
+    align-items: start;
+}
+
+.history-text h2  { margin-bottom: 20px; }
+.history-text p   { color: var(--text-body); line-height: 1.85; margin-bottom: 16px; }
+
+.history-meta {
+    display: flex;
+    gap: 32px;
+    margin-top: 28px;
+    flex-wrap: wrap;
+}
+
+.history-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.history-meta-item strong {
+    font-family: var(--font-heading);
+    font-size: 1.7rem;
+    font-weight: 900;
+    color: var(--bb-blue);
+    line-height: 1;
+}
+
+.history-meta-item strong span { color: var(--bb-red); }
+
+.history-meta-item small {
+    font-family: var(--font-heading);
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+/* History right panel */
+.history-panel {
+    background: var(--bb-blue);
+    border-radius: var(--radius-xl);
+    padding: 40px 32px;
+    position: sticky;
+    top: calc(var(--nav-height) + 24px);
+}
+
+.history-panel-logo {
+    width: 72px;
+    height: 72px;
+    background: var(--bb-red);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    border: 3px solid rgba(255,255,255,.2);
+}
+
+.history-panel-logo span {
+    font-family: var(--font-heading);
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: var(--bb-white);
+}
+
+.history-panel h3 {
+    color: var(--bb-white);
+    font-size: 1.15rem;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.history-panel-motto {
+    text-align: center;
+    font-family: var(--font-heading);
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--bb-gold);
+    margin-bottom: 28px;
+}
+
+.history-panel-facts {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.panel-fact {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px;
+    background: rgba(255,255,255,.07);
+    border-radius: var(--radius);
+}
+
+.panel-fact-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--bb-red);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bb-white);
+    font-size: .85rem;
+    flex-shrink: 0;
+}
+
+.panel-fact-body { display: flex; flex-direction: column; gap: 2px; }
+
+.panel-fact-body strong {
+    font-family: var(--font-heading);
+    font-size: .78rem;
+    font-weight: 700;
+    color: var(--bb-white);
+}
+
+.panel-fact-body span {
+    font-size: .78rem;
+    color: rgba(255,255,255,.55);
+}
+
+/* ---- BB Object ---- */
+.bb-object-section {
+    background: var(--bb-blue);
+    padding: 72px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.bb-object-section::before,
+.bb-object-section::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,.03);
+}
+.bb-object-section::before { width: 350px; height: 350px; top: -100px; right: -60px; }
+.bb-object-section::after  { width: 250px; height: 250px; bottom: -80px; left: -40px; }
+
+.bb-object-inner {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.bb-object-eyebrow {
+    font-family: var(--font-heading);
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--bb-gold);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.bb-object-eyebrow::before,
+.bb-object-eyebrow::after {
+    content: '';
+    width: 32px;
+    height: 1.5px;
+    background: var(--bb-gold);
+    border-radius: 1px;
+}
+
+.bb-object-quote {
+    font-family: var(--font-heading);
+    font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+    font-weight: 700;
+    color: var(--bb-white);
+    line-height: 1.7;
+    font-style: italic;
+    position: relative;
+    padding: 0 20px;
+}
+
+.bb-object-quote .quote-mark {
+    font-size: 4rem;
+    color: var(--bb-red);
+    font-family: Georgia, serif;
+    line-height: .5;
+    vertical-align: -.4em;
+    opacity: .6;
+}
+
+.bb-object-quote .quote-mark--close {
+    line-height: 0;
+    vertical-align: -.7em;
+}
+
+/* ---- Mission & Vision ---- */
+.mv-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+}
+
+.mv-card {
+    border-radius: var(--radius-lg);
+    padding: 40px 36px;
+    position: relative;
+    overflow: hidden;
+}
+
+.mv-card--mission {
+    background: var(--bb-blue);
+    color: var(--bb-white);
+}
+
+.mv-card--vision {
+    background: var(--bb-red);
+    color: var(--bb-white);
+}
+
+.mv-card-icon {
+    width: 52px;
+    height: 52px;
+    background: rgba(255,255,255,.12);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: var(--bb-white);
+    margin-bottom: 20px;
+}
+
+.mv-card h3 {
+    color: var(--bb-white);
+    font-size: 1.15rem;
+    font-weight: 800;
+    margin-bottom: 14px;
+}
+
+.mv-card p {
+    color: rgba(255,255,255,.8);
+    font-size: .92rem;
+    line-height: 1.8;
+    margin: 0;
+}
+
+/* Watermark icon */
+.mv-card::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    right: -20px;
+    font-family: 'Font Awesome 6 Free';
+    font-size: 7rem;
+    font-weight: 900;
+    color: rgba(255,255,255,.05);
+    pointer-events: none;
+}
+
+/* ---- Core Values ---- */
+.values-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+.value-card {
+    background: var(--bb-white);
+    border-radius: var(--radius-lg);
+    padding: 36px 28px;
+    box-shadow: var(--shadow-sm);
+    border-top: 4px solid var(--bb-red);
+    transition: var(--transition);
+    text-align: center;
+}
+
+.value-card:nth-child(3n+2) { border-top-color: var(--bb-blue); }
+.value-card:nth-child(3n)   { border-top-color: var(--bb-gold); }
+
+.value-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-md);
+}
+
+.value-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--bg-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    margin: 0 auto 18px;
+    color: var(--bb-red);
+    transition: var(--transition);
+}
+
+.value-card:nth-child(3n+2) .value-icon { color: var(--bb-blue); }
+.value-card:nth-child(3n)   .value-icon { color: var(--bb-gold); }
+
+.value-card:hover .value-icon {
+    background: var(--bb-red);
+    color: var(--bb-white);
+    transform: scale(1.08);
+}
+
+.value-card:nth-child(3n+2):hover .value-icon { background: var(--bb-blue); }
+.value-card:nth-child(3n):hover   .value-icon { background: var(--bb-gold); }
+
+.value-card h3 {
+    font-size: 1rem;
+    color: var(--bb-blue);
+    margin-bottom: 10px;
+}
+
+.value-card p {
+    font-size: .85rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin: 0;
+}
+
+/* ---- Leadership grid ---- */
+.leadership-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+}
+
+.leader-card {
+    background: var(--bb-white);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+}
+
+.leader-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-md);
+}
+
+.leader-photo {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    object-position: top;
+}
+
+.leader-photo-placeholder {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: linear-gradient(135deg, var(--bb-blue) 0%, var(--bb-blue-dark) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.leader-photo-placeholder i {
+    font-size: 4rem;
+    color: rgba(255,255,255,.2);
+}
+
+.leader-body {
+    padding: 24px 22px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.leader-role {
+    font-family: var(--font-heading);
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--bb-red);
+    margin-bottom: 6px;
+}
+
+.leader-name {
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--bb-blue);
+    margin-bottom: 12px;
+    line-height: 1.25;
+}
+
+.leader-bio {
+    font-size: .84rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+    flex: 1;
+    margin-bottom: 16px;
+}
+
+.leader-contacts {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+}
+
+.leader-contact-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .8rem;
+    color: var(--text-muted);
+}
+
+.leader-contact-item i {
+    color: var(--bb-red);
+    width: 14px;
+    font-size: .78rem;
+}
+
+.leader-contact-item a { color: var(--text-muted); }
+.leader-contact-item a:hover { color: var(--bb-blue); }
+
+/* ---- About page CTA ---- */
+.about-cta {
+    background: linear-gradient(135deg, var(--bb-blue-dark) 0%, var(--bb-blue) 100%);
+    padding: 80px 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.about-cta::before {
+    content: '';
+    position: absolute;
+    top: -100px; right: -80px;
+    width: 350px; height: 350px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.04);
+}
+
+.about-cta h2  { color: var(--bb-white); margin-bottom: 12px; }
+.about-cta p   { color: rgba(255,255,255,.7); max-width: 520px; margin: 0 auto 32px; }
+
+.about-cta h2,
+.about-cta p   { position: relative; z-index: 1; }
+
+.cta-btns {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+}
+
+/* ================================================================
+   RESPONSIVE
+================================================================ */
+@media (max-width: 1024px) {
+    .history-grid      { grid-template-columns: 1fr; }
+    .history-panel     { position: static; }
+    .values-grid       { grid-template-columns: repeat(2, 1fr); }
+    .leadership-grid   { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+    .mv-grid         { grid-template-columns: 1fr; }
+    .values-grid     { grid-template-columns: 1fr; }
+    .leadership-grid { grid-template-columns: 1fr; }
+    .history-meta    { gap: 20px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ================================================================
+     PAGE HERO
+================================================================ -->
+<section class="page-hero"{% if battalion_info.banner %} style="background-image: linear-gradient(135deg, rgba(15,36,68,.93) 0%, rgba(26,58,107,.88) 55%, rgba(192,57,43,.18) 100%), url('{{ battalion_info.banner.url }}'); background-size: cover; background-position: center top;"{% endif %}>
+    <div class="container page-hero-inner">
+
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="{% url 'core:home' %}">Home</a>
+            <i class="fas fa-chevron-right"></i>
+            <span>About Us</span>
+        </nav>
+
+        <h1>{{ battalion_info.hero_title }}</h1>
+        <p class="page-hero-sub">{{ battalion_info.motto }}</p>
+
+    </div>
+</section>
+
+
+<!-- ================================================================
+     HISTORY SECTION
+================================================================ -->
+<section class="section" id="history">
+    <div class="container">
+        <div class="history-grid">
+
+            <!-- Left: history text -->
+            <div class="history-text fade-in">
+                <span class="section-label">Our Story</span>
+                <h2>{{ battalion_info.history_heading }}</h2>
+
+                {% if battalion_info.history %}
+                    {% for paragraph in battalion_info.history.splitlines %}
+                        {% if paragraph.strip %}
+                            <p>{{ paragraph }}</p>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <p>
+                        Unity Battalion Council has served as a beacon of faith, discipline,
+                        and Christian character development for boys across our community.
+                        Founded on the timeless principles of the Boys' Brigade movement,
+                        our battalion has grown from humble beginnings into a thriving council
+                        of active companies united by one motto: <em>Sure and Stedfast</em>.
+                    </p>
+                    <p>
+                        Over the decades, we have commissioned hundreds of officers,
+                        enrolled thousands of boys, and watched countless young men grow into
+                        leaders of integrity in their homes, churches, and nation. The spirit
+                        of the Boys' Brigade, Obedience, Reverence, Discipline, Self-Respect,
+                        runs through everything we do.
+                    </p>
+                    <p style="color: var(--text-muted); font-style: italic; font-size: .85rem;">
+                        <i class="fas fa-info-circle"></i>
+                        This content can be updated by a super admin via the dashboard.
+                    </p>
+                {% endif %}
+
+                <!-- Meta stats row -->
+                <div class="history-meta">
+                    {% if battalion_info.founded_year %}
+                    <div class="history-meta-item">
+                        <strong>{{ battalion_info.founded_year }}</strong>
+                        <small>Year Founded</small>
+                    </div>
+                    {% endif %}
+                    <div class="history-meta-item">
+                        <strong>{{ battalion_info.active_companies }}</strong>
+                        <small>Active Companies</small>
+                    </div>
+                    <div class="history-meta-item">
+                        <strong>{{ battalion_info.boys_enrolled }}</strong>
+                        <small>Boys Enrolled</small>
+                    </div>
+                    <div class="history-meta-item">
+                        <strong>{{ battalion_info.bb_sections }}</strong>
+                        <small>BB Sections</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: info panel -->
+            <div class="fade-in">
+                <div class="history-panel">
+                    <div style="width:72px;height:72px;border-radius:50%;background:#fff;
+                                border:3px solid rgba(255,255,255,0.2);overflow:hidden;
+                                display:flex;align-items:center;justify-content:center;
+                                padding:5px;margin:0 auto 24px;">
+                        <img src="{% static 'images/bb-logo.png' %}" alt="Boys Brigade Logo"
+                             style="width:100%;height:100%;object-fit:contain;">
+                    </div>
+                    <h3>{{ battalion_info.name }}</h3>
+                    <p class="history-panel-motto">{{ battalion_info.motto }}</p>
+
+                    <div class="history-panel-facts">
+
+                        <div class="panel-fact">
+                            <div class="panel-fact-icon"><i class="fas fa-map-marker-alt"></i></div>
+                            <div class="panel-fact-body">
+                                <strong>Headquarters</strong>
+                                <span>{{ battalion_info.headquarters|default:"Lagos, Nigeria" }}</span>
+                            </div>
+                        </div>
+
+                        <div class="panel-fact">
+                            <div class="panel-fact-icon"><i class="fas fa-globe-africa"></i></div>
+                            <div class="panel-fact-body">
+                                <strong>Organisation</strong>
+                                <span>{{ battalion_info.organisation }}</span>
+                            </div>
+                        </div>
+
+                        <div class="panel-fact">
+                            <div class="panel-fact-icon"><i class="fas fa-bible"></i></div>
+                            <div class="panel-fact-body">
+                                <strong>Foundation</strong>
+                                <span>Christian faith &amp; character</span>
+                            </div>
+                        </div>
+
+                        <div class="panel-fact">
+                            <div class="panel-fact-icon"><i class="fas fa-child"></i></div>
+                            <div class="panel-fact-body">
+                                <strong>Age Range</strong>
+                                <span>{{ battalion_info.age_range }}</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- ================================================================
+     MISSION & VISION
+================================================================ -->
+<section class="section section--grey">
+    <div class="container">
+        <div class="section-header fade-in">
+            <span class="section-label">Purpose</span>
+            <h2>Mission &amp; Vision</h2>
+            <p>The principles that guide everything we do as a battalion.</p>
+        </div>
+
+        <div class="mv-grid">
+
+            <div class="mv-card mv-card--mission fade-in">
+                <div class="mv-card-icon">
+                    <i class="fas fa-bullseye"></i>
+                </div>
+                <h3>Our Mission</h3>
+                <p>
+                    {% if battalion_info.mission %}
+                        {{ battalion_info.mission }}
+                    {% else %}
+                        To advance Christ's Kingdom among boys by providing a structured,
+                        faith-based programme that builds character, discipline, and
+                        fellowship across all our companies.
+                    {% endif %}
+                </p>
+            </div>
+
+            <div class="mv-card mv-card--vision fade-in">
+                <div class="mv-card-icon">
+                    <i class="fas fa-eye"></i>
+                </div>
+                <h3>Our Vision</h3>
+                <p>
+                    {% if battalion_info.vision %}
+                        {{ battalion_info.vision }}
+                    {% else %}
+                        A battalion where every boy grows into a man of integrity,
+                        rooted in faith, trained in discipline, and committed to
+                        serving God, family, and community.
+                    {% endif %}
+                </p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- ================================================================
+     BB OBJECT STATEMENT
+================================================================ -->
+<section class="bb-object-section">
+    <div class="bb-object-inner fade-in">
+
+        <p class="bb-object-eyebrow">
+            The Boys' Brigade Object
+        </p>
+
+        <p class="bb-object-quote">
+            <span class="quote-mark">&ldquo;</span>
+            {% if battalion_info.bb_object %}
+                {{ battalion_info.bb_object }}
+            {% else %}
+                The advancement of Christ's Kingdom among Boys and the promotion
+                of habits of Obedience, Reverence, Discipline, Self-Respect and
+                all that tends towards a true Christian manliness.
+            {% endif %}
+            <span class="quote-mark quote-mark--close">&rdquo;</span>
+        </p>
+
+    </div>
+</section>
+
+
+<!-- ================================================================
+     CORE VALUES
+================================================================ -->
+<section class="section" id="values">
+    <div class="container">
+        <div class="section-header fade-in">
+            <span class="section-label">What We Stand For</span>
+            <h2>Our Core Values</h2>
+            <p>
+                These pillars shape the character of every boy and officer
+                in the Unity Battalion.
+            </p>
+        </div>
+
+        {% if core_values %}
+        <div class="values-grid">
+            {% for value in core_values %}
+            <div class="value-card fade-in">
+                <div class="value-icon">
+                    <i class="{{ value.icon }}"></i>
+                </div>
+                <h3>{{ value.title }}</h3>
+                <p>{{ value.description }}</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        {# Fallback grid shown before any CoreValue records are added #}
+        <div class="values-grid">
+            {% for item in "123456"|make_list %}
+            <div class="value-card fade-in">
+                {% if forloop.counter == 1 %}
+                    <div class="value-icon"><i class="fas fa-check-circle"></i></div>
+                    <h3>Obedience</h3>
+                    <p>Respectful submission to authority in the home, church, and community; a hallmark of BB character.</p>
+                {% elif forloop.counter == 2 %}
+                    <div class="value-icon"><i class="fas fa-pray"></i></div>
+                    <h3>Reverence</h3>
+                    <p>A deep respect for God and a recognition that all we are and have comes from Him.</p>
+                {% elif forloop.counter == 3 %}
+                    <div class="value-icon"><i class="fas fa-shield-alt"></i></div>
+                    <h3>Discipline</h3>
+                    <p>Self-control and commitment; doing what is right even when it is hard.</p>
+                {% elif forloop.counter == 4 %}
+                    <div class="value-icon"><i class="fas fa-user-shield"></i></div>
+                    <h3>Self-Respect</h3>
+                    <p>Understanding one's worth as a child of God and carrying oneself with dignity.</p>
+                {% elif forloop.counter == 5 %}
+                    <div class="value-icon"><i class="fas fa-users"></i></div>
+                    <h3>Fellowship</h3>
+                    <p>Building lasting friendships rooted in shared faith, service, and purpose.</p>
+                {% else %}
+                    <div class="value-icon"><i class="fas fa-hands-helping"></i></div>
+                    <h3>Service</h3>
+                    <p>Giving back to the community and the church as a living expression of Christ's love.</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+    </div>
+</section>
+
+
+<!-- ================================================================
+     LEADERSHIP TEAM
+================================================================ -->
+<section class="section section--grey" id="leadership">
+    <div class="container">
+        <div class="section-header fade-in">
+            <span class="section-label">Our Team</span>
+            <h2>Battalion Leadership</h2>
+            <p>
+                Dedicated officers who give their time, talent, and faith
+                to advance the mission of the Boys' Brigade in Unity Battalion.
+            </p>
+        </div>
+
+        {% if leadership %}
+        <div class="leadership-grid">
+            {% for leader in leadership %}
+            <div class="leader-card fade-in">
+
+                {# Profile photo or placeholder #}
+                {% if leader.photo %}
+                    <img
+                        src="{{ leader.photo.url }}"
+                        alt="{{ leader.name }}"
+                        class="leader-photo"
+                    >
+                {% else %}
+                    <div class="leader-photo-placeholder">
+                        <i class="fas fa-user"></i>
+                    </div>
+                {% endif %}
+
+                <div class="leader-body">
+                    <p class="leader-role">{{ leader.role }}</p>
+                    <h3 class="leader-name">{{ leader.name }}</h3>
+
+                    {% if leader.bio %}
+                        <p class="leader-bio">{{ leader.bio }}</p>
+                    {% else %}
+                        <p class="leader-bio" style="color: var(--border); font-style: italic;">
+                            Bio coming soon.
+                        </p>
+                    {% endif %}
+
+                    {# Only show contact row if at least one field is set #}
+                    {% if leader.email or leader.phone %}
+                    <div class="leader-contacts">
+                        {% if leader.email %}
+                        <div class="leader-contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <a href="mailto:{{ leader.email }}">{{ leader.email }}</a>
+                        </div>
+                        {% endif %}
+                        {% if leader.phone %}
+                        <div class="leader-contact-item">
+                            <i class="fas fa-phone-alt"></i>
+                            <span>{{ leader.phone }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        {# Placeholder cards shown before any LeadershipProfile records are added #}
+        <div class="leadership-grid">
+            {% for i in "123"|make_list %}
+            <div class="leader-card fade-in">
+                <div class="leader-photo-placeholder">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="leader-body">
+                    <p class="leader-role">Battalion Leadership</p>
+                    <h3 class="leader-name">Profile Coming Soon</h3>
+                    <p class="leader-bio" style="font-style: italic; color: var(--text-muted);">
+                        Leadership profiles will appear here once they are
+                        added by the administrator.
+                    </p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+    </div>
+</section>
+
+
+<!-- ================================================================
+     CALL TO ACTION
+================================================================ -->
+<section class="about-cta">
+    <div class="container">
+        <h2 class="fade-in">{{ battalion_info.cta_heading }}</h2>
+        <p class="fade-in">{{ battalion_info.cta_text }}</p>
+        <div class="cta-btns fade-in">
+            <a href="{% url 'core:contact' %}" class="btn btn-primary">
+                <i class="fas fa-user-plus"></i> Register Your Company
+            </a>
+            <a href="{% url 'core:contact' %}" class="btn btn-outline-white">
+                <i class="fas fa-envelope"></i> Contact Us
+            </a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

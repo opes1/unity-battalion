@@ -1,0 +1,323 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {# No descriptive title — deliberately vague for security through obscurity #}
+    <title>Administrative Access</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        /* ============================================================
+           SUPER ADMIN LOGIN — Fully standalone, no base template.
+           Dark, minimal, zero public branding in visible elements.
+        ============================================================ */
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --blue:      #1A3A6B;
+            --blue-dark: #0f2444;
+            --red:       #C0392B;
+            --gold:      #D4A017;
+            --white:     #FFFFFF;
+            --radius:    10px;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'Open Sans', sans-serif;
+            background: var(--blue-dark);
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Subtle background pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(26,58,107,.6) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(192,57,43,.15) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        /* Decorative shield watermark */
+        body::after {
+            content: '';
+            position: fixed;
+            right: -120px;
+            bottom: -120px;
+            width: 500px;
+            height: 500px;
+            background: rgba(255,255,255,.02);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* ---- Card ---- */
+        .card {
+            position: relative;
+            z-index: 10;
+            background: rgba(255,255,255,.04);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,.1);
+            border-radius: 18px;
+            padding: 48px 44px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 24px 64px rgba(0,0,0,.5);
+        }
+
+        /* ---- Header ---- */
+        .card-header {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .shield-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--red) 0%, #8b1a0f 100%);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            box-shadow: 0 8px 24px rgba(192,57,43,.4);
+        }
+
+        .shield-icon i {
+            font-size: 1.4rem;
+            color: var(--white);
+        }
+
+        .card-header h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--white);
+            margin-bottom: 6px;
+            letter-spacing: -.3px;
+        }
+
+        .card-header p {
+            font-size: .82rem;
+            color: rgba(255,255,255,.45);
+            letter-spacing: .3px;
+        }
+
+        /* ---- Error message ---- */
+        .error-box {
+            background: rgba(192,57,43,.15);
+            border: 1px solid rgba(192,57,43,.4);
+            border-radius: var(--radius);
+            padding: 12px 16px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: .83rem;
+            color: #f0a8a0;
+            font-weight: 600;
+        }
+
+        .error-box i { flex-shrink: 0; margin-top: 1px; color: var(--red); }
+
+        /* ---- Form ---- */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-label {
+            display: block;
+            font-family: 'Montserrat', sans-serif;
+            font-size: .68rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,.5);
+            margin-bottom: 8px;
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,.3);
+            font-size: .85rem;
+            pointer-events: none;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 13px 14px 13px 40px;
+            background: rgba(255,255,255,.07);
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: var(--radius);
+            font-family: 'Open Sans', sans-serif;
+            font-size: .9rem;
+            color: var(--white);
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .form-input:focus {
+            border-color: rgba(255,255,255,.35);
+            background: rgba(255,255,255,.1);
+            box-shadow: 0 0 0 3px rgba(255,255,255,.07);
+        }
+
+        .form-input::placeholder { color: rgba(255,255,255,.2); }
+
+        /* ---- Submit ---- */
+        .submit-btn {
+            width: 100%;
+            padding: 13px;
+            background: var(--red);
+            color: var(--white);
+            font-family: 'Montserrat', sans-serif;
+            font-size: .88rem;
+            font-weight: 700;
+            letter-spacing: .5px;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            margin-top: 8px;
+            transition: background .2s, transform .15s, box-shadow .2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .submit-btn:hover {
+            background: #a93226;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(192,57,43,.45);
+        }
+
+        .submit-btn:active { transform: translateY(0); }
+
+        /* ---- Divider ---- */
+        .divider {
+            border: none;
+            border-top: 1px solid rgba(255,255,255,.08);
+            margin: 28px 0 20px;
+        }
+
+        /* ---- Back link ---- */
+        .back-link {
+            text-align: center;
+            font-size: .78rem;
+            color: rgba(255,255,255,.3);
+        }
+
+        .back-link a {
+            color: rgba(255,255,255,.45);
+            text-decoration: none;
+            transition: color .15s;
+        }
+
+        .back-link a:hover { color: rgba(255,255,255,.75); }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+
+        <!-- Header -->
+        <div class="card-header">
+            <div class="shield-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <h1>Battalion Control</h1>
+            <p>Authorised personnel only</p>
+        </div>
+
+        <!-- Error message (only shown on failed attempt) -->
+        {% if error %}
+        <div class="error-box" role="alert">
+            <i class="fas fa-exclamation-triangle"></i>
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <!-- Login form -->
+        <form method="post" action="{% url 'accounts:super_login' %}" novalidate>
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label class="form-label" for="id_username">Username</label>
+                <div class="input-wrap">
+                    <i class="fas fa-user input-icon"></i>
+                    <input
+                        type="text"
+                        id="id_username"
+                        name="username"
+                        class="form-input"
+                        value="{{ username }}"
+                        placeholder="Username"
+                        autocomplete="username"
+                        required
+                        autofocus
+                    >
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="id_password">Password</label>
+                <div class="input-wrap">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input
+                        type="password"
+                        id="id_password"
+                        name="password"
+                        class="form-input"
+                        placeholder="Password"
+                        autocomplete="current-password"
+                        required
+                    >
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">
+                <i class="fas fa-sign-in-alt"></i> Authenticate
+            </button>
+        </form>
+
+        <hr class="divider">
+
+        <p class="back-link">
+            <a href="{% url 'core:home' %}">
+                <i class="fas fa-arrow-left fa-xs"></i> Return to public site
+            </a>
+        </p>
+
+    </div>
+
+</body>
+</html>

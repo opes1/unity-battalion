@@ -1,0 +1,683 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Company Map{% endblock %}
+
+{% block extra_css %}
+<!-- Leaflet CSS — no SRI so unpkg/CDN content variations never cause a silent block -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+
+<style>
+/* ================================================================
+   Companies Map Page
+================================================================ */
+
+/* ---- Hero ---- */
+.map-hero {
+    background: linear-gradient(135deg, var(--bb-blue) 0%, var(--bb-blue-dark) 100%);
+    padding: 80px 0 55px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.map-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 80% 20%, rgba(212,160,23,.12) 0%, transparent 55%);
+    pointer-events: none;
+}
+.map-hero-content { position: relative; z-index: 1; }
+.map-hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    background: rgba(192,57,43,.18);
+    border: 1px solid rgba(192,57,43,.4);
+    color: #e88070;
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    padding: .35rem .9rem;
+    border-radius: 50px;
+    margin-bottom: 1.1rem;
+}
+.map-hero h1 {
+    font-size: clamp(1.9rem, 4vw, 2.8rem);
+    font-weight: 900;
+    color: #fff;
+    margin-bottom: .75rem;
+    line-height: 1.15;
+}
+.map-hero h1 span { color: var(--bb-gold); }
+.map-hero p {
+    max-width: 540px;
+    margin: 0 auto 1.75rem;
+    color: rgba(255,255,255,.75);
+    font-size: 1rem;
+    line-height: 1.7;
+}
+.map-hero-cta {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* ---- Breadcrumb ---- */
+.breadcrumb-bar {
+    background: #f4f6fa;
+    border-bottom: 1px solid #e2e6ef;
+    padding: .7rem 0;
+}
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .82rem;
+    color: #666;
+    flex-wrap: wrap;
+}
+.breadcrumb a { color: var(--bb-blue); text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+.breadcrumb-sep { color: #bbb; }
+.breadcrumb-current { color: #333; font-weight: 600; }
+
+/* ---- Map container ---- */
+.map-section {
+    background: #f8f9fc;
+    padding: 50px 0 0;
+}
+.map-wrapper {
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 6px 32px rgba(0,0,0,.12);
+    border: 1px solid #dde1ef;
+    height: 520px;
+    position: relative;
+}
+#leaflet-map {
+    width: 100%;
+    height: 100%;        /* fill .map-wrapper when its height is resolved */
+    min-height: 520px;   /* explicit fallback so Leaflet always has a non-zero dimension */
+}
+
+/* No-coordinate notice inside map area */
+.map-no-data {
+    position: absolute;
+    inset: 0;
+    background: #eef1f8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    z-index: 10;
+}
+.map-no-data-icon {
+    width: 70px;
+    height: 70px;
+    background: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: var(--bb-blue);
+    margin-bottom: 1.25rem;
+    box-shadow: 0 3px 16px rgba(0,0,0,.1);
+    opacity: .7;
+}
+.map-no-data h3 { font-size: 1.15rem; color: var(--bb-blue); margin-bottom: .5rem; }
+.map-no-data p { font-size: .88rem; color: var(--text-muted); max-width: 360px; line-height: 1.6; }
+
+/* Map stat strip */
+.map-stat-strip {
+    background: var(--bb-blue);
+    padding: .75rem 0;
+    margin-bottom: 0;
+}
+.map-stats {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.map-stat {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    font-size: .83rem;
+    color: rgba(255,255,255,.85);
+}
+.map-stat i { color: var(--bb-gold); font-size: .85rem; }
+.map-stat strong { color: #fff; }
+
+/* Leaflet popup override */
+.leaflet-popup-content-wrapper {
+    border-radius: 10px !important;
+    box-shadow: 0 6px 24px rgba(0,0,0,.18) !important;
+    padding: 0 !important;
+    overflow: hidden;
+}
+.leaflet-popup-content {
+    margin: 0 !important;
+    width: 240px !important;
+}
+.map-popup {
+    font-family: 'Open Sans', sans-serif;
+}
+.map-popup-header {
+    background: linear-gradient(135deg, #1A3A6B, #0f2347);
+    padding: 12px 14px 10px;
+}
+.map-popup-header h4 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: .9rem;
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 2px;
+    line-height: 1.25;
+}
+.map-popup-header p {
+    font-size: .73rem;
+    color: rgba(255,255,255,.7);
+    margin: 0;
+}
+.map-popup-body {
+    padding: 10px 14px 8px;
+}
+.map-popup-row {
+    display: flex;
+    align-items: flex-start;
+    gap: .5rem;
+    font-size: .77rem;
+    color: #444;
+    margin-bottom: 5px;
+    line-height: 1.4;
+}
+.map-popup-row i {
+    color: #c0392b;
+    font-size: .7rem;
+    margin-top: .15rem;
+    width: 12px;
+    flex-shrink: 0;
+}
+.map-popup-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin: 6px 0 8px;
+}
+.map-popup-badge {
+    font-size: .65rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 3px;
+    background: #e8eef8;
+    color: #1A3A6B;
+}
+.map-popup-footer {
+    padding: 0 14px 12px;
+}
+.map-popup-link {
+    display: block;
+    text-align: center;
+    background: #c0392b;
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: .78rem;
+    font-weight: 700;
+    padding: 7px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: background .2s;
+}
+.map-popup-link:hover { background: #a93226; color: #fff; }
+.leaflet-popup-tip-container { display: none; }
+
+/* ---- Companies list below map ---- */
+.map-list-section {
+    background: #f8f9fc;
+    padding: 50px 0 80px;
+}
+.map-list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.75rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+.map-list-header h2 {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--bb-blue);
+    margin: 0;
+}
+.map-list-header a {
+    font-size: .84rem;
+    font-weight: 700;
+    color: var(--bb-red);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+}
+.map-list-header a:hover { text-decoration: underline; }
+
+/* Compact list rows */
+.map-companies-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+.map-company-row {
+    background: #fff;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: flex-start;
+    gap: .85rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,.06);
+    text-decoration: none;
+    color: inherit;
+    transition: transform .2s, box-shadow .2s;
+    border-left: 4px solid var(--bb-blue);
+}
+.map-company-row:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 18px rgba(0,0,0,.1);
+}
+.map-company-row.has-pin { border-left-color: var(--bb-red); }
+
+.row-logo {
+    width: 42px;
+    height: 42px;
+    border-radius: 8px;
+    background: var(--bb-red);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-heading);
+    font-weight: 900;
+    font-size: .95rem;
+    color: #fff;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+.row-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.row-info { flex: 1; min-width: 0; }
+.row-name {
+    font-size: .92rem;
+    font-weight: 700;
+    color: var(--bb-blue);
+    margin-bottom: .15rem;
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.row-church {
+    font-size: .75rem;
+    color: var(--bb-red);
+    font-weight: 600;
+    margin-bottom: .3rem;
+}
+.row-meta {
+    font-size: .74rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    flex-wrap: wrap;
+}
+.row-meta i { font-size: .67rem; color: #999; }
+
+.row-pin-badge {
+    font-size: .65rem;
+    font-weight: 700;
+    color: var(--bb-red);
+    background: #fdecea;
+    border: 1px solid #f5c6c2;
+    padding: .15rem .45rem;
+    border-radius: 3px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: .2rem;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+    .map-wrapper { height: 380px; }
+    .map-companies-list { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<!-- ============================================================
+     PAGE HERO
+============================================================ -->
+<section class="map-hero">
+    <div class="container map-hero-content fade-in">
+        <div class="map-hero-eyebrow">
+            <i class="fas fa-map-marked-alt"></i>
+            Interactive Company Map
+        </div>
+        <h1>Find a <span>Company</span> Near You</h1>
+        <p>
+            Browse all registered Boys Brigade companies across the Unity Battalion
+            area. Click a pin to see meeting details, sections offered, and how to
+            get in touch.
+        </p>
+        <div class="map-hero-cta">
+            <a href="{% url 'companies:companies_list' %}" class="btn btn-white">
+                <i class="fas fa-list"></i> List View
+            </a>
+            <a href="{% url 'core:about' %}" class="btn btn-outline-white">
+                <i class="fas fa-info-circle"></i> About the Battalion
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     BREADCRUMB
+============================================================ -->
+<div class="breadcrumb-bar">
+    <div class="container">
+        <nav class="breadcrumb" aria-label="breadcrumb">
+            <a href="{% url 'core:home' %}"><i class="fas fa-home"></i> Home</a>
+            <span class="breadcrumb-sep"><i class="fas fa-chevron-right fa-xs"></i></span>
+            <a href="{% url 'companies:companies_list' %}">Companies</a>
+            <span class="breadcrumb-sep"><i class="fas fa-chevron-right fa-xs"></i></span>
+            <span class="breadcrumb-current">Map</span>
+        </nav>
+    </div>
+</div>
+
+<!-- ============================================================
+     LEAFLET MAP
+============================================================ -->
+<section class="map-section">
+    <div class="container">
+
+        <!-- Stat strip -->
+        <div class="map-stat-strip" style="border-radius: 10px 10px 0 0; margin-bottom: 0;">
+            <div class="container">
+                <div class="map-stats">
+                    <div class="map-stat">
+                        <i class="fas fa-flag"></i>
+                        <span><strong>{{ companies|length }}</strong> compan{{ companies|length|pluralize:"y,ies" }} registered</span>
+                    </div>
+                    <div class="map-stat">
+                        <i class="fas fa-map-pin"></i>
+                        <span><strong>{{ pin_count }}</strong> shown on map</span>
+                    </div>
+                    {% if not has_coordinates %}
+                    <div class="map-stat">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Add GPS coordinates in the admin panel to show companies on the map</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Map wrapper -->
+        <div class="map-wrapper">
+            <div id="leaflet-map"></div>
+
+            {% if not has_coordinates %}
+                <div class="map-no-data">
+                    <div class="map-no-data-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <h3>Map Pins Coming Soon</h3>
+                    <p>
+                        GPS coordinates haven't been set for any companies yet.
+                        A super-admin can add latitude &amp; longitude to each company
+                        in the admin panel to display them here.
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+</section>
+
+
+<!-- ============================================================
+     COMPANIES LIST (below map)
+============================================================ -->
+<section class="map-list-section">
+    <div class="container">
+
+        <div class="map-list-header fade-in">
+            <h2>
+                <i class="fas fa-flag" style="color:var(--bb-red);font-size:.85em;"></i>
+                All Registered Companies
+            </h2>
+            <a href="{% url 'companies:companies_list' %}">
+                <i class="fas fa-th-large"></i> Full Listing View
+            </a>
+        </div>
+
+        {% if companies %}
+            <div class="map-companies-list fade-in">
+                {% for company in companies %}
+                    {# Single <a> tag — class and data-pk set conditionally inline #}
+                    <a href="{% url 'companies:company_detail' pk=company.pk %}"
+                       class="map-company-row{% if company.latitude and company.longitude %} has-pin{% endif %}"
+                       {% if company.latitude and company.longitude %}data-pk="{{ company.pk }}"{% endif %}
+                       title="View {{ company.name }}">
+
+                        <!-- Logo / initial -->
+                        <div class="row-logo">
+                            {% if company.logo %}
+                                <img src="{{ company.logo.url }}" alt="{{ company.name }} logo">
+                            {% else %}
+                                {{ company.name|first|upper }}
+                            {% endif %}
+                        </div>
+
+                        <!-- Info -->
+                        <div class="row-info">
+                            <div class="row-name">{{ company.name }}</div>
+                            <div class="row-church">{{ company.church }}</div>
+                            <div class="row-meta">
+                                <i class="fas fa-calendar-day"></i>
+                                {{ company.get_meeting_day_display }}
+                                {% if company.meeting_time %}
+                                    &middot; {{ company.meeting_time|time:"g:i A" }}
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Pin badge shown only for mapped companies -->
+                        {% if company.latitude and company.longitude %}
+                            <span class="row-pin-badge">
+                                <i class="fas fa-map-pin"></i> On Map
+                            </span>
+                        {% endif %}
+
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p style="color:var(--text-muted); text-align:center; padding: 40px 0;">
+                No registered companies found.
+            </p>
+        {% endif %}
+
+    </div>
+</section>
+
+{% endblock %}
+
+
+{% block extra_js %}
+<!-- Leaflet JS — no SRI hash so CDN content variations never silently block the script -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
+<script>
+// Wait for window.load so the browser has fully painted the map container.
+// This guarantees #leaflet-map has non-zero dimensions before L.map() runs.
+window.addEventListener('load', function () {
+    "use strict";
+
+    // ---- Map pin data from Django view ----
+    const pins = {{ map_pins_json|safe }};
+    const hasData = pins.length > 0;
+
+    // ---- Initialise Leaflet map ----
+    const map = L.map('leaflet-map', {
+        center:          hasData ? [pins[0].lat, pins[0].lng] : [6.5244, 3.3792],
+        zoom:            hasData ? 12 : 11,
+        scrollWheelZoom: false,   // prevent accidental page-scroll hijack
+    });
+
+    // OpenStreetMap tile layer (free, no API key required)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Force Leaflet to recalculate container size immediately after init.
+    // Necessary when the container was obscured or unsized during page load
+    // (e.g. because sticky navbar, overflow:hidden ancestors, or late CSS paint).
+    map.invalidateSize();
+
+    // ---- Custom BB marker icon ----
+    const bbIcon = L.divIcon({
+        className: '',
+        html: `
+            <div style="
+                width: 34px; height: 34px;
+                background: #c0392b;
+                border-radius: 50% 50% 50% 0;
+                transform: rotate(-45deg);
+                border: 3px solid #fff;
+                box-shadow: 0 3px 12px rgba(0,0,0,.3);
+                display:flex; align-items:center; justify-content:center;
+            ">
+                <img src="{% static 'images/bb-logo.png' %}" alt="BB"
+                     style="width:18px;height:18px;object-fit:contain;
+                            transform:rotate(45deg);display:block;">
+            </div>`,
+        iconSize:   [34, 34],
+        iconAnchor: [17, 34],
+        popupAnchor:[0, -38],
+    });
+
+    // ---- Add pins to map ----
+    const bounds = [];
+
+    pins.forEach(function (company) {
+        bounds.push([company.lat, company.lng]);
+
+        // Build sections list for popup
+        const sectionHTML = company.sections.length
+            ? company.sections.map(s =>
+                `<span class="map-popup-badge">${s}</span>`
+              ).join('')
+            : '';
+
+        const popupHTML = `
+            <div class="map-popup">
+                <div class="map-popup-header">
+                    <h4>${company.name}</h4>
+                    <p>${company.church}</p>
+                </div>
+                <div class="map-popup-body">
+                    <div class="map-popup-row">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>${company.location}</span>
+                    </div>
+                    <div class="map-popup-row">
+                        <i class="fas fa-calendar-day"></i>
+                        <span>${company.meeting_day}${company.meeting_time ? ' · ' + company.meeting_time : ''}</span>
+                    </div>
+                    ${sectionHTML ? `<div class="map-popup-badges">${sectionHTML}</div>` : ''}
+                </div>
+                <div class="map-popup-footer">
+                    <a href="${company.url}" class="map-popup-link">
+                        View Profile &rarr;
+                    </a>
+                </div>
+            </div>`;
+
+        L.marker([company.lat, company.lng], { icon: bbIcon })
+            .addTo(map)
+            .bindPopup(popupHTML, { maxWidth: 260 });
+    });
+
+    // ---- Fit map to show all pins ----
+    if (bounds.length > 1) {
+        map.fitBounds(bounds, { padding: [40, 40] });
+    }
+
+    // Second invalidateSize after a short delay covers edge cases where
+    // the browser finishes painting sticky/flex ancestors only after load.
+    setTimeout(function () { map.invalidateSize(); }, 250);
+
+    // ---- Highlight list row when a pin popup opens ----
+    map.on('popupopen', function (e) {
+        // Get the lat/lng to identify the marker
+        const latlng = e.popup.getLatLng();
+        document.querySelectorAll('.map-company-row').forEach(row => {
+            row.style.outline = '';
+        });
+        const matched = pins.find(p => Math.abs(p.lat - latlng.lat) < 0.00001);
+        if (matched) {
+            const row = document.querySelector(`.map-company-row[data-pk="${matched.pk}"]`);
+            if (row) {
+                row.style.outline = '2px solid #c0392b';
+                row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+    });
+
+    map.on('popupclose', function () {
+        document.querySelectorAll('.map-company-row').forEach(row => {
+            row.style.outline = '';
+        });
+    });
+
+    // ---- Clicking a list row opens its map popup ----
+    document.querySelectorAll('.map-company-row[data-pk]').forEach(row => {
+        row.addEventListener('click', function (e) {
+            // Only intercept if the click wasn't on a link already handled
+            const pk = parseInt(this.dataset.pk);
+            const pin = pins.find(p => p.pk === pk);
+            if (pin) {
+                e.preventDefault();
+                map.setView([pin.lat, pin.lng], 15);
+                // Find the marker with this lat/lng and open its popup
+                map.eachLayer(function (layer) {
+                    if (layer.getLatLng && layer.getLatLng) {
+                        try {
+                            const ll = layer.getLatLng();
+                            if (Math.abs(ll.lat - pin.lat) < 0.00001 && layer.openPopup) {
+                                layer.openPopup();
+                            }
+                        } catch (err) { /* tile layers don't have getLatLng */ }
+                    }
+                });
+            }
+        });
+    });
+
+}); // end window.addEventListener('load', ...)
+</script>
+{% endblock %}

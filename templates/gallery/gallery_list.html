@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gallery — Unity Battalion{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Subtle animated gradient on hero */
+@keyframes heroBG {
+    0%   { background-position: 0% 50%;   }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%;   }
+}
+.gallery-hero {
+    background-size: 200% 200%;
+    animation: heroBG 12s ease infinite;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ================================================================
+     HERO
+================================================================ -->
+<section class="gallery-hero">
+    <div class="container">
+        <div class="gallery-hero-tag">
+            <i class="fas fa-images"></i> Photo Gallery
+        </div>
+        <h1>Moments &amp; Memories</h1>
+        <p class="gallery-hero-sub">
+            Browse albums from parades, competitions, training camps, church services,
+            and community outreach, all captured by Unity Battalion.
+        </p>
+        <nav class="gallery-breadcrumb" aria-label="Breadcrumb">
+            <a href="{% url 'core:home' %}"><i class="fas fa-home fa-sm"></i> Home</a>
+            <span class="sep">/</span>
+            <span>Gallery</span>
+        </nav>
+    </div>
+</section>
+
+
+<!-- ================================================================
+     MAIN CONTENT
+================================================================ -->
+<div class="gallery-page">
+    <div class="container">
+        <div class="gallery-layout fade-in">
+
+            <!-- ---- Main area ---- -->
+            <div class="gallery-main-area">
+
+                <!-- Filter bar -->
+                <form method="get" class="gallery-filter-bar" id="filterForm">
+                    <label for="filterCompany"><i class="fas fa-filter fa-sm"></i> Filter:</label>
+
+                    <select name="company" id="filterCompany"
+                            onchange="document.getElementById('filterForm').submit()">
+                        <option value="">All Companies</option>
+                        {% for co in companies_with_albums %}
+                            <option value="{{ co.pk }}"
+                                {% if selected_company == co.pk|stringformat:"s" %}selected{% endif %}>
+                                {{ co.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <select name="year" id="filterYear"
+                            onchange="document.getElementById('filterForm').submit()">
+                        <option value="">All Years</option>
+                        {% for y in years %}
+                            <option value="{{ y|date:'Y' }}"
+                                {% if selected_year == y|date:'Y' %}selected{% endif %}>
+                                {{ y|date:"Y" }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    {% if selected_company or selected_year %}
+                        <a href="{% url 'gallery:gallery_list' %}" class="btn-filter-reset">
+                            <i class="fas fa-times fa-sm"></i> Clear filters
+                        </a>
+                    {% endif %}
+                </form>
+
+                <!-- Album grid -->
+                {% if albums %}
+                    <div class="album-grid">
+                        {% for album in albums %}
+                            <a href="{% url 'gallery:album_detail' album.pk %}" class="album-card fade-in">
+                                <div class="album-card-thumb">
+                                    {% if album.cover_photo %}
+                                        <img src="{{ album.cover_photo.url }}"
+                                             alt="{{ album.title }}"
+                                             loading="lazy">
+                                    {% else %}
+                                        {% with first=album.items.first %}
+                                            {% if first and first.file %}
+                                                <img src="{{ first.file.url }}"
+                                                     alt="{{ album.title }}"
+                                                     loading="lazy">
+                                            {% else %}
+                                                <div class="album-card-placeholder">
+                                                    <i class="fas fa-images"></i>
+                                                </div>
+                                            {% endif %}
+                                        {% endwith %}
+                                    {% endif %}
+                                    <span class="album-card-badge">
+                                        <i class="fas fa-camera fa-xs"></i>
+                                        {{ album.items.count }}
+                                    </span>
+                                </div>
+                                <div class="album-card-body">
+                                    <h3 class="album-card-title">{{ album.title }}</h3>
+                                    <div class="album-card-meta">
+                                        {% if album.company %}
+                                            <span>
+                                                <i class="fas fa-shield-alt fa-xs"></i>
+                                                {{ album.company.name }}
+                                            </span>
+                                        {% else %}
+                                            <span>
+                                                <i class="fas fa-globe fa-xs"></i>
+                                                Battalion-Wide
+                                            </span>
+                                        {% endif %}
+                                        <span>
+                                            <i class="far fa-calendar fa-xs"></i>
+                                            {{ album.created_at|date:"M Y" }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+
+                {% else %}
+                    <div class="album-empty-state">
+                        <i class="fas fa-folder-open"></i>
+                        <h3>No Albums Found</h3>
+                        {% if selected_company or selected_year %}
+                            <p>No albums match your current filters. <a href="{% url 'gallery:gallery_list' %}">Clear filters</a> to see all albums.</p>
+                        {% else %}
+                            <p>No albums have been uploaded yet. Check back soon!</p>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+            </div><!-- /gallery-main-area -->
+
+            <!-- ---- Sidebar ---- -->
+            <aside class="gallery-sidebar">
+
+                <!-- Filter by Company -->
+                {% if companies_with_albums %}
+                <div class="gallery-sidebar-card">
+                    <h3 class="gallery-sidebar-title">
+                        <i class="fas fa-shield-alt fa-sm"></i> By Company
+                    </h3>
+                    <ul class="gallery-sidebar-list">
+                        <li>
+                            <a href="{% url 'gallery:gallery_list' %}{% if selected_year %}?year={{ selected_year }}{% endif %}"
+                               class="{% if not selected_company %}active{% endif %}">
+                                All Companies
+                            </a>
+                        </li>
+                        {% for co in companies_with_albums %}
+                            <li>
+                                <a href="?company={{ co.pk }}{% if selected_year %}&year={{ selected_year }}{% endif %}"
+                                   class="{% if selected_company == co.pk|stringformat:'s' %}active{% endif %}">
+                                    {{ co.name }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <!-- Filter by Year -->
+                {% if years %}
+                <div class="gallery-sidebar-card">
+                    <h3 class="gallery-sidebar-title">
+                        <i class="far fa-calendar fa-sm"></i> By Year
+                    </h3>
+                    <ul class="gallery-sidebar-list">
+                        <li>
+                            <a href="{% url 'gallery:gallery_list' %}{% if selected_company %}?company={{ selected_company }}{% endif %}"
+                               class="{% if not selected_year %}active{% endif %}">
+                                All Years
+                            </a>
+                        </li>
+                        {% for y in years %}
+                            <li>
+                                <a href="?year={{ y|date:'Y' }}{% if selected_company %}&company={{ selected_company }}{% endif %}"
+                                   class="{% if selected_year == y|date:'Y' %}active{% endif %}">
+                                    {{ y|date:"Y" }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <!-- Quick link back home -->
+                <div class="gallery-sidebar-card" style="text-align:center;">
+                    <a href="{% url 'core:home' %}" class="btn btn-outline" style="width:100%;justify-content:center;">
+                        <i class="fas fa-home"></i> Back to Home
+                    </a>
+                </div>
+
+            </aside>
+
+        </div><!-- /gallery-layout -->
+    </div>
+</div>
+
+{% endblock %}

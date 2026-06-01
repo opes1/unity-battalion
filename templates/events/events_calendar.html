@@ -1,0 +1,688 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Event Calendar{% endblock %}
+
+{% block extra_css %}
+<!-- FullCalendar CSS bundled inside the JS file — no separate link needed for v6 global build -->
+<style>
+/* ================================================================
+   Events Calendar Page
+================================================================ */
+
+/* ---- Hero ---- */
+.cal-hero {
+    background: linear-gradient(135deg, var(--bb-blue) 0%, var(--bb-blue-dark) 100%);
+    padding: 80px 0 55px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.cal-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 75% 25%, rgba(212,160,23,.12) 0%, transparent 55%);
+    pointer-events: none;
+}
+.cal-hero-content { position: relative; z-index: 1; }
+.hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    background: rgba(192,57,43,.18);
+    border: 1px solid rgba(192,57,43,.4);
+    color: #e88070;
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    padding: .35rem .9rem;
+    border-radius: 50px;
+    margin-bottom: 1.1rem;
+}
+.cal-hero h1 {
+    font-size: clamp(1.9rem, 4vw, 2.8rem);
+    font-weight: 900;
+    color: #fff;
+    margin-bottom: .75rem;
+    line-height: 1.15;
+}
+.cal-hero h1 span { color: var(--bb-gold); }
+.cal-hero p {
+    max-width: 520px;
+    margin: 0 auto 1.75rem;
+    color: rgba(255,255,255,.75);
+    font-size: 1rem;
+    line-height: 1.7;
+}
+.cal-hero-cta {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* ---- Breadcrumb ---- */
+.breadcrumb-bar {
+    background: #f4f6fa;
+    border-bottom: 1px solid #e2e6ef;
+    padding: .7rem 0;
+}
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .82rem;
+    color: #666;
+    flex-wrap: wrap;
+}
+.breadcrumb a { color: var(--bb-blue); text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+.breadcrumb-sep { color: #bbb; }
+.breadcrumb-current { color: #333; font-weight: 600; }
+
+/* ---- Legend ---- */
+.cal-legend-bar {
+    background: #fff;
+    border-bottom: 1px solid #e8eaf0;
+    padding: .65rem 0;
+}
+.cal-legend {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+.cal-legend-label {
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    margin-right: .25rem;
+}
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    font-size: .78rem;
+    font-weight: 600;
+    color: #444;
+}
+.legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* ---- Calendar section ---- */
+.cal-section {
+    background: #f8f9fc;
+    padding: 40px 0 0;
+}
+.cal-wrapper {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 4px 24px rgba(0,0,0,.09);
+    padding: 24px;
+    margin-bottom: 50px;
+}
+
+/* FullCalendar custom overrides */
+#fullcalendar { min-height: 560px; }
+
+.fc .fc-toolbar-title {
+    font-family: var(--font-heading) !important;
+    font-size: 1.15rem !important;
+    font-weight: 800 !important;
+    color: var(--bb-blue) !important;
+}
+.fc .fc-button-primary {
+    background: var(--bb-blue) !important;
+    border-color: var(--bb-blue) !important;
+    font-family: var(--font-heading) !important;
+    font-size: .78rem !important;
+    font-weight: 700 !important;
+    letter-spacing: .04em !important;
+}
+.fc .fc-button-primary:hover {
+    background: var(--bb-blue-dark) !important;
+    border-color: var(--bb-blue-dark) !important;
+}
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+    background: var(--bb-red) !important;
+    border-color: var(--bb-red) !important;
+}
+.fc .fc-daygrid-day-number {
+    font-family: var(--font-heading) !important;
+    font-weight: 700 !important;
+    font-size: .8rem !important;
+    color: var(--text-dark) !important;
+}
+.fc .fc-col-header-cell-cushion {
+    font-family: var(--font-heading) !important;
+    font-size: .75rem !important;
+    font-weight: 800 !important;
+    letter-spacing: .05em !important;
+    text-transform: uppercase !important;
+    color: var(--bb-blue) !important;
+}
+.fc .fc-daygrid-day.fc-day-today {
+    background: rgba(26,58,107,.07) !important;
+}
+.fc .fc-event {
+    border-radius: 4px !important;
+    font-family: var(--font-body) !important;
+    font-size: .74rem !important;
+    font-weight: 600 !important;
+    padding: 2px 5px !important;
+    border: none !important;
+    cursor: pointer !important;
+}
+.fc .fc-list-event-title a {
+    font-family: var(--font-body) !important;
+    font-weight: 600 !important;
+}
+
+/* ---- Event popup modal ---- */
+.cal-popup-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.45);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+.cal-popup-overlay.open { display: flex; }
+.cal-popup {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 12px 48px rgba(0,0,0,.28);
+    max-width: 460px;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    animation: popupIn .2s ease;
+}
+@keyframes popupIn {
+    from { opacity: 0; transform: scale(.95) translateY(12px); }
+    to   { opacity: 1; transform: none; }
+}
+.cal-popup-header {
+    padding: 1.25rem 1.5rem 1rem;
+    border-bottom: 1px solid #f0f2f5;
+    position: relative;
+}
+.cal-popup-type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: .25rem .6rem;
+    border-radius: 4px;
+    margin-bottom: .6rem;
+    color: #fff;
+}
+.cal-popup-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--bb-blue);
+    line-height: 1.3;
+    margin: 0;
+    padding-right: 2rem;
+}
+.cal-popup-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #f0f2f5;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .8rem;
+    color: #666;
+    cursor: pointer;
+    transition: background .15s;
+}
+.cal-popup-close:hover { background: var(--bb-red); color: #fff; }
+.cal-popup-body { padding: 1.25rem 1.5rem; }
+.cal-popup-row {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    font-size: .88rem;
+    color: #444;
+    margin-bottom: .75rem;
+    line-height: 1.5;
+}
+.cal-popup-row:last-child { margin-bottom: 0; }
+.cal-popup-row i {
+    color: var(--bb-red);
+    width: 16px;
+    text-align: center;
+    margin-top: .15rem;
+    flex-shrink: 0;
+}
+.cal-popup-row .pop-label {
+    font-size: .68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: #999;
+    display: block;
+    margin-bottom: .1rem;
+}
+.cal-popup-desc {
+    font-size: .82rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+.cal-popup-footer {
+    padding: .75rem 1.5rem 1.25rem;
+    border-top: 1px solid #f0f2f5;
+}
+.cal-popup-footer a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    background: var(--bb-blue);
+    color: #fff;
+    border-radius: 8px;
+    padding: .7rem 1rem;
+    font-family: var(--font-heading);
+    font-size: .84rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background .2s;
+}
+.cal-popup-footer a:hover { background: var(--bb-blue-dark); }
+
+/* ---- Upcoming list below calendar ---- */
+.cal-upcoming-section {
+    background: #f8f9fc;
+    padding: 0 0 80px;
+}
+.cal-upcoming-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: .75rem;
+}
+.cal-upcoming-header h2 {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--bb-blue);
+    margin: 0;
+}
+.cal-upcoming-header a {
+    font-size: .83rem;
+    font-weight: 700;
+    color: var(--bb-red);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+}
+.cal-upcoming-header a:hover { text-decoration: underline; }
+
+.cal-upcoming-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+.cal-event-mini {
+    background: #fff;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: flex-start;
+    gap: .9rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,.06);
+    text-decoration: none;
+    color: inherit;
+    transition: transform .2s, box-shadow .2s;
+    border-left: 4px solid var(--bb-blue);
+}
+.cal-event-mini:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,.1); }
+.cal-event-mini.type-parade      { border-left-color: #1A3A6B; }
+.cal-event-mini.type-competition { border-left-color: #C0392B; }
+.cal-event-mini.type-training    { border-left-color: #1a6b3a; }
+.cal-event-mini.type-church      { border-left-color: #8e44ad; }
+.cal-event-mini.type-other       { border-left-color: #b8860b; }
+.mini-date {
+    width: 44px;
+    text-align: center;
+    flex-shrink: 0;
+    background: var(--bb-blue);
+    border-radius: 6px;
+    padding: .35rem .25rem;
+    line-height: 1;
+}
+.mini-date-day {
+    font-family: var(--font-heading);
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: #fff;
+    display: block;
+}
+.mini-date-mon {
+    font-size: .6rem;
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--bb-gold);
+}
+.mini-info { flex: 1; min-width: 0; }
+.mini-title {
+    font-size: .88rem;
+    font-weight: 700;
+    color: var(--bb-blue);
+    margin-bottom: .2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.mini-meta {
+    font-size: .74rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+.mini-meta i { font-size: .65rem; color: var(--bb-red); }
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+    .cal-wrapper { padding: 12px; }
+    #fullcalendar { min-height: 420px; }
+    .cal-upcoming-grid { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<!-- ============================================================
+     PAGE HERO
+============================================================ -->
+<section class="cal-hero">
+    <div class="container cal-hero-content fade-in">
+        <div class="hero-eyebrow">
+            <i class="fas fa-calendar-alt"></i> Interactive Calendar
+        </div>
+        <h1>Event <span>Calendar</span></h1>
+        <p>
+            Browse all battalion events in monthly, weekly or list view.
+            Colour-coded by type; click any event to see full details.
+        </p>
+        <div class="cal-hero-cta">
+            <a href="{% url 'events:events_list' %}" class="btn btn-white">
+                <i class="fas fa-list"></i> List View
+            </a>
+            <a href="{% url 'core:about' %}" class="btn btn-outline-white">
+                <i class="fas fa-info-circle"></i> About the Battalion
+            </a>
+        </div>
+    </div>
+</section>
+
+
+<!-- ============================================================
+     BREADCRUMB
+============================================================ -->
+<div class="breadcrumb-bar">
+    <div class="container">
+        <nav class="breadcrumb" aria-label="breadcrumb">
+            <a href="{% url 'core:home' %}"><i class="fas fa-home"></i> Home</a>
+            <span class="breadcrumb-sep"><i class="fas fa-chevron-right fa-xs"></i></span>
+            <a href="{% url 'events:events_list' %}">Events</a>
+            <span class="breadcrumb-sep"><i class="fas fa-chevron-right fa-xs"></i></span>
+            <span class="breadcrumb-current">Calendar</span>
+        </nav>
+    </div>
+</div>
+
+
+<!-- ============================================================
+     COLOUR LEGEND
+============================================================ -->
+<div class="cal-legend-bar">
+    <div class="container">
+        <div class="cal-legend">
+            <span class="cal-legend-label"><i class="fas fa-circle fa-xs"></i> Key:</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#1A3A6B;"></span> Parade</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#C0392B;"></span> Competition</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#1a6b3a;"></span> Training</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#8e44ad;"></span> Church</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#b8860b;"></span> Other</span>
+        </div>
+    </div>
+</div>
+
+
+<!-- ============================================================
+     FULLCALENDAR
+============================================================ -->
+<section class="cal-section">
+    <div class="container">
+        <div class="cal-wrapper fade-in">
+            <div id="fullcalendar"></div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ============================================================
+     UPCOMING EVENTS LIST (below calendar)
+============================================================ -->
+<section class="cal-upcoming-section">
+    <div class="container">
+
+        <div class="cal-upcoming-header fade-in">
+            <h2><i class="fas fa-clock" style="color:var(--bb-red);font-size:.85em;"></i> Upcoming Events</h2>
+            <a href="{% url 'events:events_list' %}">
+                <i class="fas fa-list"></i> View All Events
+            </a>
+        </div>
+
+        {% if upcoming %}
+            <div class="cal-upcoming-grid fade-in">
+                {% for event in upcoming %}
+                <a href="{% url 'events:event_detail' pk=event.pk %}"
+                   class="cal-event-mini type-{{ event.event_type }}">
+                    <div class="mini-date">
+                        <span class="mini-date-day">{{ event.date|date:"j" }}</span>
+                        <span class="mini-date-mon">{{ event.date|date:"M" }}</span>
+                    </div>
+                    <div class="mini-info">
+                        <div class="mini-title">{{ event.title }}</div>
+                        <div class="mini-meta">
+                            {% if event.start_time %}
+                                <span><i class="fas fa-clock"></i> {{ event.start_time|time:"g:i A" }}</span>
+                            {% endif %}
+                            {% if event.location %}
+                                <span><i class="fas fa-map-marker-alt"></i> {{ event.location|truncatechars:28 }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p style="color:var(--text-muted);text-align:center;padding:40px 0;">
+                No upcoming events found. Check back soon!
+            </p>
+        {% endif %}
+
+    </div>
+</section>
+
+
+<!-- ============================================================
+     EVENT POPUP MODAL
+============================================================ -->
+<div class="cal-popup-overlay" id="calPopupOverlay" role="dialog" aria-modal="true" aria-labelledby="popupTitle">
+    <div class="cal-popup" id="calPopup">
+        <div class="cal-popup-header">
+            <div class="cal-popup-type-badge" id="popupTypeBadge"></div>
+            <h3 class="cal-popup-title" id="popupTitle"></h3>
+            <button class="cal-popup-close" id="calPopupClose" aria-label="Close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="cal-popup-body" id="calPopupBody"></div>
+        <div class="cal-popup-footer">
+            <a href="#" id="popupDetailLink">
+                <i class="fas fa-info-circle"></i> View Full Details
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+<!-- FullCalendar v6 — single global bundle, no SRI to avoid CDN hash mismatches -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+
+<script>
+window.addEventListener('load', function () {
+    "use strict";
+
+    // ---- Event data from Django view ----
+    const events = {{ fc_events_json|safe }};
+
+    // ---- Popup elements ----
+    const overlay     = document.getElementById('calPopupOverlay');
+    const popupClose  = document.getElementById('calPopupClose');
+    const popupTitle  = document.getElementById('popupTitle');
+    const popupBadge  = document.getElementById('popupTypeBadge');
+    const popupBody   = document.getElementById('calPopupBody');
+    const popupLink   = document.getElementById('popupDetailLink');
+
+    function openPopup(info) {
+        const ev    = info.event;
+        const props = ev.extendedProps;
+        const color = ev.backgroundColor || '#1A3A6B';
+
+        popupTitle.textContent       = ev.title;
+        popupBadge.textContent       = props.type_label || '';
+        popupBadge.style.background  = color;
+        popupLink.href               = ev.url;
+
+        // Build body HTML
+        let dateStr = ev.start ? ev.start.toLocaleDateString('en-NG', {
+            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+        }) : '';
+        let timeStr = '';
+        if (ev.start && ev.start.getHours() !== 0) {
+            timeStr = ev.start.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' });
+            if (ev.end) {
+                timeStr += ' – ' + ev.end.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' });
+            }
+        }
+
+        let html = '';
+        if (dateStr) {
+            html += `<div class="cal-popup-row">
+                        <i class="fas fa-calendar-day"></i>
+                        <div><span class="pop-label">Date</span>${dateStr}</div>
+                     </div>`;
+        }
+        if (timeStr) {
+            html += `<div class="cal-popup-row">
+                        <i class="fas fa-clock"></i>
+                        <div><span class="pop-label">Time</span>${timeStr}</div>
+                     </div>`;
+        }
+        if (props.location) {
+            html += `<div class="cal-popup-row">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div><span class="pop-label">Location</span>${props.location}</div>
+                     </div>`;
+        }
+        if (props.company) {
+            html += `<div class="cal-popup-row">
+                        <i class="fas fa-flag"></i>
+                        <div><span class="pop-label">Scope</span>${props.company}</div>
+                     </div>`;
+        }
+        if (props.description) {
+            html += `<div class="cal-popup-row">
+                        <i class="fas fa-align-left"></i>
+                        <div><span class="pop-label">Description</span>
+                             <span class="cal-popup-desc">${props.description}</span>
+                        </div>
+                     </div>`;
+        }
+        popupBody.innerHTML = html;
+
+        overlay.classList.add('open');
+        popupClose.focus();
+    }
+
+    function closePopup() {
+        overlay.classList.remove('open');
+    }
+
+    popupClose.addEventListener('click', closePopup);
+    overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) closePopup();
+    });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closePopup();
+    });
+
+    // ---- Initialise FullCalendar ----
+    const calEl = document.getElementById('fullcalendar');
+    const calendar = new FullCalendar.Calendar(calEl, {
+        initialView:    'dayGridMonth',
+        headerToolbar: {
+            left:   'prev,next today',
+            center: 'title',
+            right:  'dayGridMonth,timeGridWeek,listMonth',
+        },
+        buttonText: {
+            today:     'Today',
+            month:     'Month',
+            week:      'Week',
+            list:      'List',
+        },
+        events: events,
+        eventClick: function (info) {
+            info.jsEvent.preventDefault();  // stop navigation — open popup instead
+            openPopup(info);
+        },
+        eventMouseEnter: function (info) {
+            info.el.style.cursor = 'pointer';
+        },
+        height:       'auto',
+        fixedWeekCount: false,
+        dayMaxEvents: 3,       // "+N more" link when many events on one day
+    });
+
+    calendar.render();
+
+    // Force size recalculation after render (same as Leaflet fix pattern)
+    setTimeout(function () { calendar.updateSize(); }, 200);
+});
+</script>
+{% endblock %}

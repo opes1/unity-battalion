@@ -1,0 +1,146 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block dashboard_content %}
+
+<div class="dash-page-header">
+    <div>
+        <h1 class="dash-page-title">Users</h1>
+        <p class="dash-page-subtitle">
+            {{ pending_users|length }} pending · {{ approved_users|length }} approved
+        </p>
+    </div>
+</div>
+
+<!-- Pending users -->
+{% if pending_users %}
+    <div class="dash-card" style="margin-bottom:24px;">
+        <div class="dash-card-header">
+            <span class="dash-card-title">
+                <i class="fas fa-user-clock"></i> Pending Approval
+                <span class="dash-badge" style="background:var(--dash-red);">
+                    {{ pending_users|length }}
+                </span>
+            </span>
+        </div>
+        <table class="dash-table">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Company</th>
+                    <th>Phone</th>
+                    <th>Joined</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in pending_users %}
+                    <tr>
+                        <td>
+                            <div style="font-weight:700;">
+                                {{ u.get_full_name|default:u.username }}
+                            </div>
+                            <div style="font-size:.75rem;color:var(--dash-text-muted);">
+                                @{{ u.username }}
+                            </div>
+                        </td>
+                        <td style="font-size:.85rem;">{{ u.email }}</td>
+                        <td style="font-size:.85rem;">
+                            {{ u.company.name|default:"— Not assigned —" }}
+                        </td>
+                        <td style="font-size:.85rem;">{{ u.phone|default:"—" }}</td>
+                        <td style="font-size:.8rem;color:var(--dash-text-muted);white-space:nowrap;">
+                            {{ u.date_joined|date:"j M Y" }}
+                        </td>
+                        <td>
+                            <form method="post"
+                                  action="{% url 'dashboard:approve_user' u.pk %}">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="btn-dash btn-dash--success btn-dash--sm"
+                                        onclick="return confirm('Approve {{ u.get_full_name|default:u.username|escapejs }}?')">
+                                    <i class="fas fa-check"></i> Approve
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+
+<!-- All approved users -->
+<div class="dash-card">
+    <div class="dash-card-header">
+        <span class="dash-card-title">
+            <i class="fas fa-users"></i> All Users
+        </span>
+    </div>
+
+    {% if approved_users %}
+        <table class="dash-table">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Company</th>
+                    <th>Status</th>
+                    <th>Joined</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in approved_users %}
+                    <tr>
+                        <td>
+                            <div style="font-weight:700;">
+                                {{ u.get_full_name|default:u.username }}
+                            </div>
+                            {% if u.phone %}
+                                <div style="font-size:.75rem;color:var(--dash-text-muted);">
+                                    {{ u.phone }}
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td style="font-size:.85rem;">{{ u.email }}</td>
+                        <td>
+                            {% if u.is_super_admin %}
+                                <span class="status-badge status-badge--unread">Super Admin</span>
+                            {% else %}
+                                <span class="status-badge status-badge--read">Company Admin</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-size:.85rem;">
+                            {% if u.company %}
+                                <a href="{% url 'dashboard:edit_company' u.company.pk %}"
+                                   style="color:var(--dash-blue);text-decoration:none;font-weight:600;">
+                                    {{ u.company.name }}
+                                </a>
+                            {% else %}
+                                <span style="color:var(--dash-text-muted);">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if u.is_active %}
+                                <span class="status-badge status-badge--active">Active</span>
+                            {% else %}
+                                <span class="status-badge status-badge--inactive">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-size:.8rem;color:var(--dash-text-muted);white-space:nowrap;">
+                            {{ u.date_joined|date:"j M Y" }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="dash-empty" style="padding:50px 20px;">
+            <i class="fas fa-users"></i>
+            <p>No approved users yet.</p>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

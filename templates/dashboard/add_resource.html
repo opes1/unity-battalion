@@ -1,0 +1,218 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block extra_dash_css %}
+.form-field { margin-bottom: 18px; }
+.form-label {
+    display: block;
+    font-size: .8rem;
+    font-weight: 700;
+    color: var(--dash-text);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: 6px;
+}
+.form-label .req { color: var(--dash-red); margin-left: 2px; }
+.form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 10px 13px;
+    border: 1.5px solid var(--dash-border);
+    border-radius: var(--dash-radius);
+    font-family: var(--font-body);
+    font-size: .9rem;
+    color: var(--dash-text);
+    background: #fff;
+    transition: border-color .18s, box-shadow .18s;
+    outline: none;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--dash-blue);
+    box-shadow: 0 0 0 3px rgba(26,58,107,.1);
+}
+.form-input.is-error, .form-select.is-error {
+    border-color: var(--dash-red);
+    box-shadow: 0 0 0 3px rgba(192,57,43,.1);
+}
+.form-error {
+    font-size: .77rem;
+    color: var(--dash-red);
+    font-weight: 600;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.form-hint { font-size: .77rem; color: var(--dash-text-muted); margin-top: 4px; }
+.form-textarea { resize: vertical; min-height: 90px; }
+.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+.form-check-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: .9rem;
+    font-weight: 600;
+    color: var(--dash-text);
+    padding: 10px 14px;
+    border-radius: var(--dash-radius);
+    border: 1.5px solid var(--dash-border);
+    background: #fff;
+    transition: border-color .15s, background .15s;
+    user-select: none;
+}
+.form-check-label:hover { border-color: var(--dash-blue); background: #f5f7fc; }
+.form-check-label input { accent-color: var(--dash-blue); width: 18px; height: 18px; }
+.form-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding-top: 10px;
+    border-top: 1px solid var(--dash-border);
+    margin-top: 6px;
+}
+/* Audience description hints */
+.audience-hints { margin-top: 10px; }
+.audience-hint-item {
+    font-size: .78rem;
+    color: var(--dash-text-muted);
+    padding: 3px 0;
+    display: flex;
+    gap: 6px;
+}
+.audience-hint-item i { color: var(--dash-blue); margin-top: 2px; flex-shrink: 0; }
+@media (max-width: 700px) { .form-grid-2 { grid-template-columns: 1fr; } }
+{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="dash-page-header">
+    <div>
+        <h1 class="dash-page-title">Add Resource</h1>
+        <p class="dash-page-subtitle">Upload a new downloadable document or file</p>
+    </div>
+    <a href="{% url 'dashboard:manage_resources' %}" class="btn-dash btn-dash--outline">
+        <i class="fas fa-arrow-left"></i> Back to Resources
+    </a>
+</div>
+
+<div class="dash-card">
+    <div class="dash-card-header">
+        <div class="dash-card-title">
+            <i class="fas fa-file-upload"></i> New Resource Details
+        </div>
+    </div>
+    <div class="dash-card-body">
+        <form method="post"
+              action="{% url 'dashboard:add_resource' %}"
+              enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Title -->
+            <div class="form-field">
+                <label class="form-label" for="title">
+                    Resource Title <span class="req">*</span>
+                </label>
+                <input type="text"
+                       id="title" name="title"
+                       class="form-input {% if errors.title %}is-error{% endif %}"
+                       value="{{ form_data.title }}"
+                       placeholder="e.g. BB Officer Training Manual 2026">
+                {% if errors.title %}
+                    <div class="form-error"><i class="fas fa-exclamation-circle fa-xs"></i> {{ errors.title }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Description -->
+            <div class="form-field">
+                <label class="form-label" for="description">Description</label>
+                <textarea id="description" name="description"
+                          class="form-textarea"
+                          placeholder="Brief summary of what this resource covers and who should download it.">{{ form_data.description }}</textarea>
+            </div>
+
+            <div class="form-grid-2">
+                <!-- Category -->
+                <div class="form-field">
+                    <label class="form-label" for="category">
+                        Category <span class="req">*</span>
+                    </label>
+                    <select id="category" name="category"
+                            class="form-select {% if errors.category %}is-error{% endif %}">
+                        <option value="">— Select category —</option>
+                        {% for val, label in category_choices %}
+                            <option value="{{ val }}" {% if form_data.category == val %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    {% if errors.category %}
+                        <div class="form-error"><i class="fas fa-exclamation-circle fa-xs"></i> {{ errors.category }}</div>
+                    {% endif %}
+                    <div class="form-hint">
+                        Officers — training manuals, admin forms<br>
+                        Parents — guides, permission slips<br>
+                        Boys — activity sheets, badge requirements<br>
+                        General — council notices, newsletters
+                    </div>
+                </div>
+
+                <!-- Audience -->
+                <div class="form-field">
+                    <label class="form-label" for="audience">
+                        Audience <span class="req">*</span>
+                    </label>
+                    <select id="audience" name="audience"
+                            class="form-select {% if errors.audience %}is-error{% endif %}">
+                        <option value="">— Select audience —</option>
+                        {% for val, label in audience_choices %}
+                            <option value="{{ val }}" {% if form_data.audience == val %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    {% if errors.audience %}
+                        <div class="form-error"><i class="fas fa-exclamation-circle fa-xs"></i> {{ errors.audience }}</div>
+                    {% endif %}
+                    <div class="form-hint">Controls who can see this resource on the public site.</div>
+                </div>
+            </div>
+
+            <!-- File upload -->
+            <div class="form-field">
+                <label class="form-label" for="file">File Upload</label>
+                <input type="file"
+                       id="file" name="file"
+                       class="form-input"
+                       accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.txt,.csv,.png,.jpg,.jpeg">
+                <div class="form-hint">
+                    PDF, Word, Excel, PowerPoint, ZIP, or image files accepted.
+                    You can save a placeholder without a file and attach the file later via Django Admin.
+                </div>
+            </div>
+
+            <!-- Publish checkbox -->
+            <div class="form-field">
+                <label class="form-check-label">
+                    <input type="checkbox"
+                           name="is_published"
+                           {% if form_data.is_published %}checked{% endif %}>
+                    Publish immediately — make this resource visible on the public Resources page
+                </label>
+                <div class="form-hint" style="margin-top:6px;margin-left:4px;">
+                    Leave unchecked to save as a draft and publish later from the Resources list.
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-dash btn-dash--primary" style="padding:10px 24px;font-size:.9rem;">
+                    <i class="fas fa-file-upload"></i> Add Resource
+                </button>
+                <a href="{% url 'dashboard:manage_resources' %}" class="btn-dash btn-dash--outline" style="padding:10px 18px;font-size:.9rem;">
+                    Cancel
+                </a>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+{% endblock %}
