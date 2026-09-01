@@ -24,7 +24,6 @@ def companies_list(request):
 
     Supports GET-based filtering:
         ?meeting_day=SAT      — filter by day abbreviation (MON … SUN)
-        ?section=anchor_boys  — filter companies that offer a given section
 
     The queryset prefetches 'admins' (User objects linked via FK) so
     the template can show officer count without extra queries.
@@ -38,23 +37,15 @@ def companies_list(request):
 
     # ---- Optional GET filters ----
     meeting_day = request.GET.get('meeting_day', '').strip().upper()
-    section     = request.GET.get('section',     '').strip().lower()
 
     if meeting_day and meeting_day in dict(Company.MeetingDay.choices):
         companies = companies.filter(meeting_day=meeting_day)
-
-    if section and section in SECTION_META:
-        # PostgreSQL JSONField @> containment: checks if array contains [section]
-        companies = companies.filter(sections_offered__contains=[section])
 
     context = {
         'page_title':         'Our Companies',
         'companies':          companies,
         'meeting_days':       Company.MeetingDay.choices,
-        'sections':           Company.Section.choices,
-        'section_meta':       SECTION_META,
         'filter_meeting_day': meeting_day,
-        'filter_section':     section,
         'total_count':        companies.count(),
     }
     return render(request, 'companies/companies_list.html', context)

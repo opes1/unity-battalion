@@ -483,22 +483,11 @@
                         {% endfor %}
                     </select>
 
-                    <!-- Section filter -->
-                    <select name="section" class="filter-select" aria-label="Filter by section">
-                        <option value="">All Sections</option>
-                        {% for value, label in sections %}
-                            <option value="{{ value }}"
-                                {% if filter_section == value %}selected{% endif %}>
-                                {{ label }}
-                            </option>
-                        {% endfor %}
-                    </select>
-
                     <button type="submit" class="filter-btn-apply">
                         <i class="fas fa-search"></i> Apply
                     </button>
 
-                    {% if filter_meeting_day or filter_section %}
+                    {% if filter_meeting_day %}
                         <a href="{% url 'companies:companies_list' %}" class="filter-clear">
                             <i class="fas fa-times"></i> Clear
                         </a>
@@ -634,14 +623,14 @@
                     <i class="fas fa-flag"></i>
                 </div>
                 <h3>
-                    {% if filter_meeting_day or filter_section %}
+                    {% if filter_meeting_day %}
                         No matching companies
                     {% else %}
                         No companies yet
                     {% endif %}
                 </h3>
                 <p>
-                    {% if filter_meeting_day or filter_section %}
+                    {% if filter_meeting_day %}
                         No active companies match the selected filters.
                         Try removing a filter to see more results.
                     {% else %}
@@ -649,7 +638,7 @@
                         Check back soon — we're growing the battalion!
                     {% endif %}
                 </p>
-                {% if filter_meeting_day or filter_section %}
+                {% if filter_meeting_day %}
                     <a href="{% url 'companies:companies_list' %}" class="btn btn-secondary">
                         <i class="fas fa-times"></i> Clear Filters
                     </a>
