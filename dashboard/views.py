@@ -10,10 +10,9 @@ from datetime import date
 
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
-from django.utils import timezone
 
 from accounts.models import User
-from companies.models import Company, CompanyUpdateRequest
+from companies.models import Company
 from core.models import (
     BattalionInfo, ContactInfo, ContactMessage,
     CoreValue, LeadershipProfile,
@@ -36,16 +35,6 @@ def _sidebar_counts():
     every page load.
     """
     return {
-        'sidebar_pending_approvals': (
-            CompanyUpdateRequest.objects
-            .filter(status=CompanyUpdateRequest.Status.PENDING)
-            .count()
-        ),
-        'sidebar_pending_users': (
-            User.objects
-            .filter(is_approved=False, role=User.Role.COMPANY_ADMIN)
-            .count()
-        ),
         'sidebar_unread_messages': (
             ContactMessage.objects.filter(is_read=False).count()
         ),
@@ -80,9 +69,6 @@ def super_dashboard(request):
                                   role=User.Role.COMPANY_ADMIN,
                                   is_approved=True,
                               ).count(),
-        'pending_approvals':  CompanyUpdateRequest.objects.filter(
-                                  status=CompanyUpdateRequest.Status.PENDING
-                              ).count(),
         'pending_users':      User.objects.filter(
                                   is_approved=False,
                                   role=User.Role.COMPANY_ADMIN,
@@ -101,18 +87,10 @@ def super_dashboard(request):
         .order_by('-created_at')[:5]
     )
 
-    pending_requests = (
-        CompanyUpdateRequest.objects
-        .filter(status=CompanyUpdateRequest.Status.PENDING)
-        .select_related('company', 'requested_by')
-        .order_by('-requested_at')[:5]
-    )
-
     context = {
         'page_title': 'Dashboard Overview',
         'stats':           stats,
         'recent_messages': recent_messages,
-        'pending_requests': pending_requests,
         **_sidebar_counts(),
     }
     return render(request, 'dashboard/super_dashboard.html', context)
@@ -271,101 +249,6 @@ def toggle_company(request, pk):
         verb = 'activated' if company.is_active else 'deactivated'
         messages.success(request, f'"{company.name}" has been {verb}.')
     return redirect('dashboard:manage_companies')
-
-
-# ======================================================================
-# Approval Requests
-# ======================================================================
-
-@super_admin_required
-def pending_approvals(request):
-    """
-    Lists all pending company update requests and recent history.
-    """
-    pending = (
-        CompanyUpdateRequest.objects
-        .filter(status=CompanyUpdateRequest.Status.PENDING)
-        .select_related('company', 'requested_by')
-        .order_by('-requested_at')
-    )
-    history = (
-        CompanyUpdateRequest.objects
-        .exclude(status=CompanyUpdateRequest.Status.PENDING)
-        .select_related('company', 'requested_by', 'reviewed_by')
-        .order_by('-reviewed_at')[:20]
-    )
-    context = {
-        'page_title': 'Pending Approvals',
-        'pending':  pending,
-        'history':  history,
-        **_sidebar_counts(),
-    }
-    return render(request, 'dashboard/pending_approvals.html', context)
-
-
-@super_admin_required
-def approve_request(request, pk):
-    """
-    POST-only.  Approves a CompanyUpdateRequest and applies the
-    proposed_data fields to the Company record.
-    """
-    if request.method == 'POST':
-        req = get_object_or_404(
-            CompanyUpdateRequest.objects.select_related('company'),
-            pk=pk,
-            status=CompanyUpdateRequest.Status.PENDING,
-        )
-        company = req.company
-
-        # Safe fields that company admins are allowed to change
-        SAFE_FIELDS = {
-            'about', 'meeting_day', 'meeting_time', 'location',
-            'church', 'phone', 'email', 'sections_offered',
-            'date_established',
-        }
-        for field, value in req.proposed_data.items():
-            if field in SAFE_FIELDS:
-                setattr(company, field, value)
-        company.save()
-
-        req.status      = CompanyUpdateRequest.Status.APPROVED
-        req.reviewed_at = timezone.now()
-        req.reviewed_by = request.user
-        req.save()
-
-        messages.success(
-            request,
-            f'Update for "{company.name}" approved and applied.',
-        )
-    return redirect('dashboard:pending_approvals')
-
-
-@super_admin_required
-def reject_request(request, pk):
-    """
-    POST-only.  Rejects a CompanyUpdateRequest with an optional reason.
-    The reason is stored on the request record and visible to the
-    company admin when they next log in.
-    """
-    if request.method == 'POST':
-        req = get_object_or_404(
-            CompanyUpdateRequest,
-            pk=pk,
-            status=CompanyUpdateRequest.Status.PENDING,
-        )
-        reason = request.POST.get('rejection_reason', '').strip()
-
-        req.status           = CompanyUpdateRequest.Status.REJECTED
-        req.rejection_reason = reason
-        req.reviewed_at      = timezone.now()
-        req.reviewed_by      = request.user
-        req.save()
-
-        messages.success(
-            request,
-            f'Update request for "{req.company.name}" has been rejected.',
-        )
-    return redirect('dashboard:pending_approvals')
 
 
 # ======================================================================

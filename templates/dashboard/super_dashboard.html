@@ -83,14 +83,6 @@
 .stat-card--teal   { border-top-color: #16a085; }
 .stat-card--teal   .stat-icon { background: #e8f8f5; color: #16a085; }
 
-/* ---- Dashboard grid (two columns) ---- */
-.dash-grid-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 20px;
-}
-
 /* ---- Quick actions ---- */
 .quick-actions {
     display: flex;
@@ -194,27 +186,8 @@
     flex-shrink: 0;
 }
 
-/* ---- Proposed data JSON display ---- */
-.proposed-fields {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-}
-
-.proposed-field-tag {
-    background: #f0f2f7;
-    color: var(--dash-text-muted);
-    font-size: .68rem;
-    font-weight: 700;
-    padding: 2px 7px;
-    border-radius: 4px;
-    text-transform: uppercase;
-    letter-spacing: .04em;
-}
-
 @media (max-width: 1100px) {
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
-    .dash-grid-2 { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 600px) {
@@ -258,14 +231,6 @@
             </span>
         {% endif %}
     </a>
-    <a href="{% url 'dashboard:pending_approvals' %}" class="btn-quick btn-quick--gold">
-        <i class="fas fa-check-circle"></i> Review Approvals
-        {% if stats.pending_approvals %}
-            <span style="background:rgba(255,255,255,.25);padding:1px 6px;border-radius:10px;font-size:.7rem;">
-                {{ stats.pending_approvals }}
-            </span>
-        {% endif %}
-    </a>
     <a href="/admin/" target="_blank" class="btn-quick btn-quick--blue" style="background:#4a5568;">
         <i class="fas fa-cog"></i> Django Admin
     </a>
@@ -296,15 +261,12 @@
         </div>
     </div>
 
-    <div class="stat-card {% if stats.pending_approvals or stats.pending_users %}stat-card--orange{% else %}stat-card--blue{% endif %}">
+    <div class="stat-card {% if stats.pending_users %}stat-card--orange{% else %}stat-card--blue{% endif %}">
         <div class="stat-icon"><i class="fas fa-clock"></i></div>
         <div class="stat-body">
-            <div class="stat-label">Pending</div>
-            <div class="stat-value">{{ stats.pending_approvals|add:stats.pending_users }}</div>
-            <div class="stat-sub">
-                {{ stats.pending_approvals }} approval{{ stats.pending_approvals|pluralize }},
-                {{ stats.pending_users }} user{{ stats.pending_users|pluralize }}
-            </div>
+            <div class="stat-label">Pending Users</div>
+            <div class="stat-value">{{ stats.pending_users }}</div>
+            <div class="stat-sub">awaiting approval</div>
         </div>
     </div>
 
@@ -341,11 +303,8 @@
 
 </div>
 
-<!-- Two-column section: Messages + Approvals -->
-<div class="dash-grid-2">
-
-    <!-- Recent messages -->
-    <div class="dash-card">
+<!-- Recent messages -->
+<div class="dash-card">
         <div class="dash-card-header">
             <span class="dash-card-title">
                 <i class="fas fa-envelope"></i> Recent Messages
@@ -399,77 +358,5 @@
             </div>
         {% endif %}
     </div>
-
-    <!-- Pending approval requests -->
-    <div class="dash-card">
-        <div class="dash-card-header">
-            <span class="dash-card-title">
-                <i class="fas fa-check-circle"></i> Pending Approvals
-            </span>
-            <a href="{% url 'dashboard:pending_approvals' %}" class="dash-card-action">
-                View all →
-            </a>
-        </div>
-
-        {% if pending_requests %}
-            <table class="dash-table">
-                <thead>
-                    <tr>
-                        <th>Company</th>
-                        <th>Submitted By</th>
-                        <th>Fields</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for req in pending_requests %}
-                        <tr>
-                            <td>
-                                <div style="font-weight:700;font-size:.85rem;">
-                                    {{ req.company.name }}
-                                </div>
-                                <div style="font-size:.75rem;color:var(--dash-text-muted);">
-                                    {{ req.requested_at|date:"j M Y" }}
-                                </div>
-                            </td>
-                            <td style="font-size:.83rem;">
-                                {{ req.requested_by.get_full_name|default:req.requested_by.username|default:"—" }}
-                            </td>
-                            <td>
-                                <div class="proposed-fields">
-                                    {% for field in req.proposed_data.keys %}
-                                        <span class="proposed-field-tag">{{ field }}</span>
-                                    {% endfor %}
-                                </div>
-                            </td>
-                            <td>
-                                <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                                    <form method="post"
-                                          action="{% url 'dashboard:approve_request' req.pk %}">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn-dash btn-dash--success btn-dash--sm"
-                                                onclick="return confirm('Approve this update?')">
-                                            <i class="fas fa-check"></i>
-                                        </button>
-                                    </form>
-                                    <a href="{% url 'dashboard:pending_approvals' %}#reject-{{ req.pk }}"
-                                       class="btn-dash btn-dash--danger btn-dash--sm">
-                                        <i class="fas fa-times"></i>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <div class="dash-empty">
-                <i class="fas fa-check-double"></i>
-                <p>No pending approval requests.</p>
-            </div>
-        {% endif %}
-    </div>
-
-</div><!-- /dash-grid-2 -->
 
 {% endblock %}

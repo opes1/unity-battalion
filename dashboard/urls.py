@@ -23,19 +23,6 @@ urlpatterns = [
          views.toggle_company,
          name='toggle_company'),
 
-    # ---- Approval requests ------------------------------------------
-    path('super-dashboard/approvals/',
-         views.pending_approvals,
-         name='pending_approvals'),
-
-    path('super-dashboard/approvals/<int:pk>/approve/',
-         views.approve_request,
-         name='approve_request'),
-
-    path('super-dashboard/approvals/<int:pk>/reject/',
-         views.reject_request,
-         name='reject_request'),
-
     # ---- User management --------------------------------------------
     path('super-dashboard/users/',
          views.manage_users,

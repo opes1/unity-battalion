@@ -647,24 +647,6 @@
                 Companies
             </a>
 
-            <a href="{% url 'dashboard:pending_approvals' %}"
-               class="dash-nav-link {% if request.resolver_match.url_name == 'pending_approvals' %}active{% endif %}">
-                <i class="fas fa-check-circle dash-nav-icon"></i>
-                Approvals
-                {% if sidebar_pending_approvals %}
-                    <span class="dash-badge">{{ sidebar_pending_approvals }}</span>
-                {% endif %}
-            </a>
-
-            <a href="{% url 'dashboard:manage_users' %}"
-               class="dash-nav-link {% if request.resolver_match.url_name == 'manage_users' %}active{% endif %}">
-                <i class="fas fa-users dash-nav-icon"></i>
-                Users
-                {% if sidebar_pending_users %}
-                    <span class="dash-badge">{{ sidebar_pending_users }}</span>
-                {% endif %}
-            </a>
-
             <a href="{% url 'dashboard:manage_events' %}"
                class="dash-nav-link {% if request.resolver_match.url_name in 'manage_events,add_event,edit_event' %}active{% endif %}">
                 <i class="fas fa-calendar-alt dash-nav-icon"></i>
