@@ -1,8 +1,6 @@
-import json
 from datetime import date
 
 from django.shortcuts import render, get_object_or_404
-from django.urls import reverse
 
 from .models import Company
 
@@ -49,52 +47,6 @@ def companies_list(request):
         'total_count':        companies.count(),
     }
     return render(request, 'companies/companies_list.html', context)
-
-
-def companies_map(request):
-    """
-    Interactive Leaflet.js map of all active companies.
-
-    Builds a JSON list of companies that have latitude + longitude set.
-    The JSON is embedded directly in the template for Leaflet to consume —
-    no separate API endpoint required.
-
-    Companies without coordinates still appear in the list below the map.
-    """
-    companies = Company.objects.filter(is_active=True).order_by('name')
-
-    # ---- Build JSON payload for Leaflet map pins ----
-    map_pins = []
-    for company in companies:
-        if company.latitude is not None and company.longitude is not None:
-            # Format time as "4:00 PM" — strftime %-I removes leading zero
-            try:
-                time_str = company.meeting_time.strftime('%I:%M %p').lstrip('0') if company.meeting_time else ''
-            except Exception:
-                time_str = str(company.meeting_time) if company.meeting_time else ''
-
-            map_pins.append({
-                'pk':          company.pk,
-                'name':        company.name,
-                'church':      company.church,
-                'location':    company.location,
-                'meeting_day': company.get_meeting_day_display(),
-                'meeting_time': time_str,
-                'sections':    company.sections_display,
-                'lat':         company.latitude,
-                'lng':         company.longitude,
-                'url':         reverse('companies:company_detail', kwargs={'pk': company.pk}),
-            })
-
-    context = {
-        'page_title':      'Company Map',
-        'companies':       companies,
-        'map_pins_json':   json.dumps(map_pins),
-        'has_coordinates': bool(map_pins),
-        'pin_count':       len(map_pins),
-        'section_meta':    SECTION_META,
-    }
-    return render(request, 'companies/companies_map.html', context)
 
 
 def company_detail(request, pk):

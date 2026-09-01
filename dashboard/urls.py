@@ -70,23 +70,6 @@ urlpatterns = [
          views.delete_album,
          name='delete_album'),
 
-    # ---- Resources --------------------------------------------------
-    path('super-dashboard/resources/',
-         views.manage_resources,
-         name='manage_resources'),
-
-    path('super-dashboard/resources/add/',
-         views.add_resource,
-         name='add_resource'),
-
-    path('super-dashboard/resources/<int:pk>/delete/',
-         views.delete_resource,
-         name='delete_resource'),
-
-    path('super-dashboard/resources/<int:pk>/toggle/',
-         views.toggle_resource,
-         name='toggle_resource'),
-
     # ---- Contact messages -------------------------------------------
     path('super-dashboard/messages/',
          views.view_messages,

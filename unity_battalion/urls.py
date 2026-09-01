@@ -10,7 +10,6 @@ urlpatterns = [
     path('', include('companies.urls')),
     path('', include('events.urls')),
     path('', include('gallery.urls')),
-    path('', include('resources.urls')),
     path('', include('dashboard.urls')),
 ]
 

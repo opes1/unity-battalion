@@ -19,7 +19,6 @@ from core.models import (
 )
 from events.models import Event
 from gallery.models import Album, GalleryItem
-from resources.models import Resource
 
 from .decorators import super_admin_required
 
@@ -752,103 +751,6 @@ def delete_album(request, pk):
         album.delete()
         messages.success(request, f'Album "{title}" and all its photos have been deleted.')
     return redirect('dashboard:manage_gallery')
-
-
-# ======================================================================
-# Resources Management  (super-admin only)
-# ======================================================================
-
-@super_admin_required
-def manage_resources(request):
-    """Lists all resources with category, audience, file, and published status."""
-    resources = Resource.objects.order_by('-uploaded_at')
-    context = {
-        'page_title': 'Resources Management',
-        'resources':  resources,
-        **_sidebar_counts(),
-    }
-    return render(request, 'dashboard/manage_resources.html', context)
-
-
-@super_admin_required
-def add_resource(request):
-    """GET — blank resource form.  POST — create Resource, redirect."""
-    category_choices = Resource.Category.choices
-    audience_choices = Resource.Audience.choices
-    errors           = {}
-
-    if request.method == 'POST':
-        title        = request.POST.get('title', '').strip()
-        description  = request.POST.get('description', '').strip()
-        category     = request.POST.get('category', '').strip()
-        audience     = request.POST.get('audience', '').strip()
-        is_published = 'is_published' in request.POST
-
-        if not title:
-            errors['title'] = 'Resource title is required.'
-        if not category:
-            errors['category'] = 'Category is required.'
-        if not audience:
-            errors['audience'] = 'Audience is required.'
-
-        if not errors:
-            resource = Resource.objects.create(
-                title=title,
-                description=description,
-                category=category,
-                audience=audience,
-                is_published=is_published,
-                uploaded_by=request.user,
-            )
-            if request.FILES.get('file'):
-                resource.file = request.FILES['file']
-                resource.save(update_fields=['file'])
-            messages.success(request, f'Resource "{resource.title}" added successfully.')
-            return redirect('dashboard:manage_resources')
-
-        form_data = {
-            'title': title, 'description': description,
-            'category': category, 'audience': audience,
-            'is_published': is_published,
-        }
-    else:
-        form_data = {
-            'title': '', 'description': '', 'category': '',
-            'audience': '', 'is_published': False,
-        }
-
-    context = {
-        'page_title':       'Add Resource',
-        'category_choices': category_choices,
-        'audience_choices': audience_choices,
-        'form_data':        form_data,
-        'errors':           errors,
-        **_sidebar_counts(),
-    }
-    return render(request, 'dashboard/add_resource.html', context)
-
-
-@super_admin_required
-def delete_resource(request, pk):
-    """POST-only.  Deletes the resource and redirects."""
-    if request.method == 'POST':
-        resource = get_object_or_404(Resource, pk=pk)
-        title = resource.title
-        resource.delete()
-        messages.success(request, f'Resource "{title}" has been deleted.')
-    return redirect('dashboard:manage_resources')
-
-
-@super_admin_required
-def toggle_resource(request, pk):
-    """POST-only.  Flips is_published on a resource."""
-    if request.method == 'POST':
-        resource = get_object_or_404(Resource, pk=pk)
-        resource.is_published = not resource.is_published
-        resource.save(update_fields=['is_published'])
-        verb = 'published' if resource.is_published else 'unpublished'
-        messages.success(request, f'"{resource.title}" has been {verb}.')
-    return redirect('dashboard:manage_resources')
 
 
 # ======================================================================

@@ -381,32 +381,6 @@
     margin-bottom: 1.5rem;
 }
 
-/* ---- Map CTA Banner ---- */
-.map-cta-banner {
-    background: linear-gradient(135deg, var(--bb-red) 0%, #a93226 100%);
-    padding: 60px 0;
-    text-align: center;
-}
-.map-cta-banner h2 {
-    font-size: clamp(1.5rem,3vw,2rem);
-    font-weight: 800;
-    color: #fff;
-    margin-bottom: .75rem;
-}
-.map-cta-banner p {
-    color: rgba(255,255,255,.82);
-    font-size: 1rem;
-    max-width: 500px;
-    margin: 0 auto 2rem;
-    line-height: 1.65;
-}
-.map-cta-banner .cta-btns {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
 /* ---- Responsive ---- */
 @media (max-width: 640px) {
     .companies-grid { grid-template-columns: 1fr; }
@@ -435,9 +409,6 @@
             and character.
         </p>
         <div class="hero-cta-strip">
-            <a href="{% url 'companies:companies_map' %}" class="btn btn-primary">
-                <i class="fas fa-map-marker-alt"></i> View on Map
-            </a>
             <a href="{% url 'core:about' %}" class="btn btn-outline-white">
                 <i class="fas fa-info-circle"></i> About the Battalion
             </a>
@@ -647,25 +618,6 @@
 
         {% endif %}
 
-    </div>
-</section>
-
-
-<!-- ============================================================
-     MAP CTA BANNER
-============================================================ -->
-<section class="map-cta-banner fade-in">
-    <div class="container">
-        <h2>Browse Companies on the Map</h2>
-        <p>
-            Looking for a company near you? Our interactive map shows all
-            registered companies and their locations across the battalion.
-        </p>
-        <div class="cta-btns">
-            <a href="{% url 'companies:companies_map' %}" class="btn btn-white">
-                <i class="fas fa-map-marked-alt"></i> Open Map View
-            </a>
-        </div>
     </div>
 </section>
 

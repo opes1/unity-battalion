@@ -68,26 +68,9 @@
             <ul class="nav-links" id="navLinks" role="navigation">
                 <li><a href="{% url 'core:home' %}" class="nav-link">Home</a></li>
                 <li><a href="{% url 'core:about' %}" class="nav-link">About</a></li>
-                <li class="has-dropdown">
-                    <a href="{% url 'companies:companies_list' %}" class="nav-link dropdown-toggle">
-                        Companies <i class="fas fa-caret-down fa-xs"></i>
-                    </a>
-                    <ul class="dropdown-menu" role="menu">
-                        <li><a href="{% url 'companies:companies_list' %}"><i class="fas fa-list fa-fw"></i> All Companies</a></li>
-                        <li><a href="{% url 'companies:companies_map' %}"><i class="fas fa-map-marker-alt fa-fw"></i> Company Map</a></li>
-                    </ul>
-                </li>
-                <li class="has-dropdown">
-                    <a href="{% url 'events:events_list' %}" class="nav-link dropdown-toggle">
-                        Events <i class="fas fa-caret-down fa-xs"></i>
-                    </a>
-                    <ul class="dropdown-menu" role="menu">
-                        <li><a href="{% url 'events:events_list' %}"><i class="fas fa-list fa-fw"></i> All Events</a></li>
-                        <li><a href="{% url 'events:events_calendar' %}"><i class="fas fa-calendar-alt fa-fw"></i> Event Calendar</a></li>
-                    </ul>
-                </li>
+                <li><a href="{% url 'companies:companies_list' %}" class="nav-link">Companies</a></li>
+                <li><a href="{% url 'events:events_list' %}" class="nav-link">Events</a></li>
                 <li><a href="{% url 'gallery:gallery_list' %}" class="nav-link">Gallery</a></li>
-                <li><a href="{% url 'resources:resources_list' %}" class="nav-link">Resources</a></li>
                 <li><a href="{% url 'core:contact' %}" class="nav-link">Contact</a></li>
             </ul>
 
@@ -179,9 +162,8 @@
                         <li><a href="{% url 'core:home' %}"><i class="fas fa-chevron-right"></i> Home</a></li>
                         <li><a href="{% url 'core:about' %}"><i class="fas fa-chevron-right"></i> About Us</a></li>
                         <li><a href="{% url 'companies:companies_list' %}"><i class="fas fa-chevron-right"></i> Our Companies</a></li>
-                        <li><a href="{% url 'events:events_calendar' %}"><i class="fas fa-chevron-right"></i> Events Calendar</a></li>
+                        <li><a href="{% url 'events:events_list' %}"><i class="fas fa-chevron-right"></i> Events</a></li>
                         <li><a href="{% url 'gallery:gallery_list' %}"><i class="fas fa-chevron-right"></i> Photo Gallery</a></li>
-                        <li><a href="{% url 'resources:resources_list' %}"><i class="fas fa-chevron-right"></i> Resources</a></li>
                         <li><a href="{% url 'core:contact' %}"><i class="fas fa-chevron-right"></i> Contact Us</a></li>
                     </ul>
                 </div>
@@ -259,17 +241,6 @@
                 hamburger.classList.remove('hamburger--open');
                 navLinks.classList.remove('nav-links--open');
                 hamburger.setAttribute('aria-expanded', 'false');
-            });
-        });
-
-        // ---- Dropdown hover on desktop, click on mobile ----
-        document.querySelectorAll('.has-dropdown').forEach(item => {
-            const toggle = item.querySelector('.dropdown-toggle');
-            toggle.addEventListener('click', e => {
-                if (window.innerWidth < 992) {
-                    e.preventDefault();
-                    item.classList.toggle('dropdown--open');
-                }
             });
         });
 

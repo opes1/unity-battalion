@@ -659,12 +659,6 @@
                 Gallery
             </a>
 
-            <a href="{% url 'dashboard:manage_resources' %}"
-               class="dash-nav-link {% if request.resolver_match.url_name in 'manage_resources,add_resource' %}active{% endif %}">
-                <i class="fas fa-file-download dash-nav-icon"></i>
-                Resources
-            </a>
-
             <a href="{% url 'dashboard:view_messages' %}"
                class="dash-nav-link {% if request.resolver_match.url_name == 'view_messages' %}active{% endif %}">
                 <i class="fas fa-envelope dash-nav-icon"></i>

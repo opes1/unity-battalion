@@ -327,32 +327,6 @@
 .events-empty h3 { font-size: 1.2rem; color: var(--bb-blue); margin-bottom: .5rem; }
 .events-empty p  { color: var(--text-muted); font-size: .9rem; line-height: 1.6; margin-bottom: 1.5rem; }
 
-/* ---- Calendar CTA ---- */
-.calendar-cta {
-    background: linear-gradient(135deg, var(--bb-red) 0%, #a93226 100%);
-    padding: 60px 0;
-    text-align: center;
-}
-.calendar-cta h2 {
-    font-size: clamp(1.5rem,3vw,2rem);
-    font-weight: 800;
-    color: #fff;
-    margin-bottom: .75rem;
-}
-.calendar-cta p {
-    color: rgba(255,255,255,.82);
-    font-size: 1rem;
-    max-width: 480px;
-    margin: 0 auto 2rem;
-    line-height: 1.65;
-}
-.calendar-cta .cta-btns {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
 /* ---- Past events slightly muted ---- */
 .event-item.past-event { opacity: .75; }
 .event-item.past-event:hover { opacity: 1; }
@@ -383,9 +357,6 @@
             and church services. Never miss a key date on the BB calendar.
         </p>
         <div class="hero-cta-strip">
-            <a href="{% url 'events:events_calendar' %}" class="btn btn-primary">
-                <i class="fas fa-calendar-alt"></i> View Calendar
-            </a>
             <a href="{% url 'core:about' %}" class="btn btn-outline-white">
                 <i class="fas fa-info-circle"></i> About the Battalion
             </a>
@@ -500,10 +471,7 @@
                 <div class="events-empty fade-in">
                     <div class="events-empty-icon"><i class="fas fa-calendar-times"></i></div>
                     <h3>No Upcoming Events</h3>
-                    <p>There are no upcoming events scheduled at this time. Check back soon; the calendar is updated regularly.</p>
-                    <a href="{% url 'events:events_calendar' %}" class="btn btn-secondary">
-                        <i class="fas fa-calendar-alt"></i> Browse Calendar
-                    </a>
+                    <p>There are no upcoming events scheduled at this time. Check back soon.</p>
                 </div>
             {% endif %}
         </div>
@@ -566,28 +534,6 @@
             {% endif %}
         </div>
 
-    </div>
-</section>
-
-
-<!-- ============================================================
-     CALENDAR CTA
-============================================================ -->
-<section class="calendar-cta fade-in">
-    <div class="container">
-        <h2>View the Full Calendar</h2>
-        <p>
-            See all battalion events in a monthly, weekly or list view.
-            Colour-coded by event type so you can plan ahead at a glance.
-        </p>
-        <div class="cta-btns">
-            <a href="{% url 'events:events_calendar' %}" class="btn btn-white">
-                <i class="fas fa-calendar-alt"></i> Open Calendar
-            </a>
-            <a href="{% url 'companies:companies_list' %}" class="btn btn-outline-white">
-                <i class="fas fa-flag"></i> Our Companies
-            </a>
-        </div>
     </div>
 </section>
 
