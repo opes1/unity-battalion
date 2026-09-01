@@ -34,6 +34,13 @@ CSRF_TRUSTED_ORIGINS = config(
     default='http://127.0.0.1:8000,http://localhost:8000'
 ).split(',')
 
+# Render terminates SSL at its proxy and forwards requests over plain HTTP
+# with an X-Forwarded-Proto header. Without this, request.is_secure() is
+# always False behind the proxy, which can cause spurious CSRF failures.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+
 
 # Application definition
 
