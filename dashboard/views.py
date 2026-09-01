@@ -112,7 +112,6 @@ def edit_company(request, pk):
     POST — Validates and saves changes directly (super-admin bypass).
     """
     company = get_object_or_404(Company, pk=pk)
-    sections_all = Company.Section.choices   # list of (value, label) tuples
     meeting_days = Company.MeetingDay.choices
 
     errors = {}
@@ -124,18 +123,10 @@ def edit_company(request, pk):
         location  = request.POST.get('location', '').strip()
         m_day     = request.POST.get('meeting_day', '').strip()
         m_time    = request.POST.get('meeting_time', '').strip()
-        sections  = request.POST.getlist('sections_offered')
         about     = request.POST.get('about', '').strip()
-        phone     = request.POST.get('phone', '').strip()
-        email     = request.POST.get('email', '').strip()
-        website   = request.POST.get('website', '').strip()
-        captain_name  = request.POST.get('captain_name', '').strip()
-        captain_phone = request.POST.get('captain_phone', '').strip()
-        captain_email = request.POST.get('captain_email', '').strip()
-        est_date  = request.POST.get('date_established', '').strip() or None
+        captain_name = request.POST.get('captain_name', '').strip()
         lat_raw   = request.POST.get('latitude', '').strip() or None
         lng_raw   = request.POST.get('longitude', '').strip() or None
-        is_active = 'is_active' in request.POST
 
         # ---- Validate -----------------------------------------------
         if not name:
@@ -148,9 +139,6 @@ def edit_company(request, pk):
             errors['meeting_day'] = 'Meeting day is required.'
         if not m_time:
             errors['meeting_time'] = 'Meeting time is required.'
-
-        valid_sections = [c[0] for c in sections_all]
-        sections = [s for s in sections if s in valid_sections]
 
         latitude  = None
         longitude = None
@@ -166,32 +154,16 @@ def edit_company(request, pk):
                 errors['longitude'] = 'Longitude must be a number, e.g. 3.3841'
 
         if not errors:
-            company.name             = name
-            company.church           = church
-            company.location         = location
-            company.meeting_day      = m_day
-            company.meeting_time     = m_time
-            company.sections_offered = sections
-            company.about            = about
-            company.phone            = phone
-            company.email            = email
-            company.website          = website
-            company.captain_name     = captain_name
-            company.captain_phone    = captain_phone
-            company.captain_email    = captain_email
-            company.date_established = est_date or None
-            company.latitude         = latitude
-            company.longitude        = longitude
-            company.is_active        = is_active
+            company.name         = name
+            company.church       = church
+            company.location     = location
+            company.meeting_day  = m_day
+            company.meeting_time = m_time
+            company.about        = about
+            company.captain_name = captain_name
+            company.latitude     = latitude
+            company.longitude    = longitude
             company.save()
-
-            # File uploads — save separately so other fields aren't re-saved
-            if request.FILES.get('logo'):
-                company.logo = request.FILES['logo']
-                company.save(update_fields=['logo'])
-            if request.FILES.get('banner'):
-                company.banner = request.FILES['banner']
-                company.save(update_fields=['banner'])
 
             messages.success(
                 request,
@@ -203,34 +175,21 @@ def edit_company(request, pk):
         form_data = {
             'name': name, 'church': church, 'location': location,
             'meeting_day': m_day, 'meeting_time': m_time,
-            'sections_offered': sections, 'about': about,
-            'phone': phone, 'email': email, 'website': website,
-            'captain_name': captain_name, 'captain_phone': captain_phone,
-            'captain_email': captain_email,
-            'date_established': est_date or '',
+            'about': about, 'captain_name': captain_name,
             'latitude': lat_raw or '', 'longitude': lng_raw or '',
-            'is_active': is_active,
         }
     else:
         # Pre-populate from existing company record
         form_data = {
-            'name':             company.name,
-            'church':           company.church,
-            'location':         company.location,
-            'meeting_day':      company.meeting_day,
-            'meeting_time':     company.meeting_time.strftime('%H:%M') if company.meeting_time else '',
-            'sections_offered': company.sections_offered or [],
-            'about':            company.about,
-            'phone':            company.phone,
-            'email':            company.email,
-            'website':          company.website,
-            'captain_name':     company.captain_name,
-            'captain_phone':    company.captain_phone,
-            'captain_email':    company.captain_email,
-            'date_established': company.date_established.isoformat() if company.date_established else '',
-            'latitude':         company.latitude if company.latitude is not None else '',
-            'longitude':        company.longitude if company.longitude is not None else '',
-            'is_active':        company.is_active,
+            'name':          company.name,
+            'church':        company.church,
+            'location':      company.location,
+            'meeting_day':   company.meeting_day,
+            'meeting_time':  company.meeting_time.strftime('%H:%M') if company.meeting_time else '',
+            'about':         company.about,
+            'captain_name':  company.captain_name,
+            'latitude':      company.latitude if company.latitude is not None else '',
+            'longitude':     company.longitude if company.longitude is not None else '',
         }
 
     context = {
@@ -238,7 +197,6 @@ def edit_company(request, pk):
         'company':      company,
         'form_data':    form_data,
         'errors':       errors,
-        'sections_all': sections_all,
         'meeting_days': meeting_days,
         **_sidebar_counts(),
     }
@@ -251,7 +209,6 @@ def add_company(request):
     GET  — Renders a blank form to register a new company.
     POST — Validates and creates the Company directly (super-admin bypass).
     """
-    sections_all = Company.Section.choices
     meeting_days = Company.MeetingDay.choices
 
     errors = {}
@@ -263,18 +220,10 @@ def add_company(request):
         location  = request.POST.get('location', '').strip()
         m_day     = request.POST.get('meeting_day', '').strip()
         m_time    = request.POST.get('meeting_time', '').strip()
-        sections  = request.POST.getlist('sections_offered')
         about     = request.POST.get('about', '').strip()
-        phone     = request.POST.get('phone', '').strip()
-        email     = request.POST.get('email', '').strip()
-        website   = request.POST.get('website', '').strip()
-        captain_name  = request.POST.get('captain_name', '').strip()
-        captain_phone = request.POST.get('captain_phone', '').strip()
-        captain_email = request.POST.get('captain_email', '').strip()
-        est_date  = request.POST.get('date_established', '').strip() or None
+        captain_name = request.POST.get('captain_name', '').strip()
         lat_raw   = request.POST.get('latitude', '').strip() or None
         lng_raw   = request.POST.get('longitude', '').strip() or None
-        is_active = 'is_active' in request.POST
 
         # ---- Validate -----------------------------------------------
         if not name:
@@ -287,9 +236,6 @@ def add_company(request):
             errors['meeting_day'] = 'Meeting day is required.'
         if not m_time:
             errors['meeting_time'] = 'Meeting time is required.'
-
-        valid_sections = [c[0] for c in sections_all]
-        sections = [s for s in sections if s in valid_sections]
 
         latitude  = None
         longitude = None
@@ -311,26 +257,11 @@ def add_company(request):
                 location=location,
                 meeting_day=m_day,
                 meeting_time=m_time,
-                sections_offered=sections,
                 about=about,
-                phone=phone,
-                email=email,
-                website=website,
                 captain_name=captain_name,
-                captain_phone=captain_phone,
-                captain_email=captain_email,
-                date_established=est_date or None,
                 latitude=latitude,
                 longitude=longitude,
-                is_active=is_active,
             )
-
-            if request.FILES.get('logo'):
-                company.logo = request.FILES['logo']
-                company.save(update_fields=['logo'])
-            if request.FILES.get('banner'):
-                company.banner = request.FILES['banner']
-                company.save(update_fields=['banner'])
 
             messages.success(
                 request,
@@ -342,30 +273,21 @@ def add_company(request):
         form_data = {
             'name': name, 'church': church, 'location': location,
             'meeting_day': m_day, 'meeting_time': m_time,
-            'sections_offered': sections, 'about': about,
-            'phone': phone, 'email': email, 'website': website,
-            'captain_name': captain_name, 'captain_phone': captain_phone,
-            'captain_email': captain_email,
-            'date_established': est_date or '',
+            'about': about, 'captain_name': captain_name,
             'latitude': lat_raw or '', 'longitude': lng_raw or '',
-            'is_active': is_active,
         }
     else:
         form_data = {
             'name': '', 'church': '', 'location': '',
             'meeting_day': '', 'meeting_time': '',
-            'sections_offered': [], 'about': '',
-            'phone': '', 'email': '', 'website': '',
-            'captain_name': '', 'captain_phone': '', 'captain_email': '',
-            'date_established': '', 'latitude': '', 'longitude': '',
-            'is_active': True,
+            'about': '', 'captain_name': '',
+            'latitude': '', 'longitude': '',
         }
 
     context = {
         'page_title':   'Add Company',
         'form_data':    form_data,
         'errors':       errors,
-        'sections_all': sections_all,
         'meeting_days': meeting_days,
         **_sidebar_counts(),
     }
