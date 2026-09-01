@@ -147,28 +147,4 @@ urlpatterns = [
     path('super-dashboard/leadership/<int:pk>/toggle/',
          views.toggle_leader,
          name='toggle_leader'),
-
-    # ================================================================
-    # Company-Admin Dashboard
-    # ================================================================
-
-    path('company-dashboard/',
-         views.company_dashboard,
-         name='company_dashboard'),
-
-    path('company-dashboard/edit-info/',
-         views.edit_company_info,
-         name='edit_company_info'),
-
-    path('company-dashboard/officers/',
-         views.manage_officers,
-         name='manage_officers'),
-
-    path('company-dashboard/members/',
-         views.manage_members,
-         name='manage_members'),
-
-    path('company-dashboard/requests/',
-         views.my_requests,
-         name='my_requests'),
 ]
