@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: unity-battalion
+    runtime: python
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: gunicorn unity_battalion.wsgi:application --log-file - --workers 2
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
