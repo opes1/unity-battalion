@@ -1,27 +1,26 @@
 from django.core.management.base import BaseCommand
 from accounts.models import User
+from decouple import config
 
 
 class Command(BaseCommand):
     help = 'Create superuser automatically from environment variables'
 
     def handle(self, *args, **kwargs):
-        if not User.objects.filter(username='admin').exists():
+        username = config('DJANGO_SUPERUSER_USERNAME', default='admin')
+        email = config('DJANGO_SUPERUSER_EMAIL', default='admin@unitybattalion.org')
+        password = config('DJANGO_SUPERUSER_PASSWORD', default='Admin@BB2024!')
+
+        if not User.objects.filter(username=username).exists():
             u = User.objects.create_superuser(
-                username='admin',
-                email='opeoyinlola11@gmail.com',
-                password='Admin@Railway2024',
+                username=username,
+                email=email,
+                password=password,
             )
             u.role = 'super_admin'
             u.is_approved = True
             u.is_active = True
             u.save()
-            self.stdout.write('Superuser created successfully')
+            self.stdout.write(f'Superuser {username} created successfully')
         else:
-            u = User.objects.get(username='admin')
-            u.role = 'super_admin'
-            u.is_approved = True
-            u.is_active = True
-            u.set_password('Admin@Railway2024')
-            u.save()
-            self.stdout.write('Superuser updated successfully')
+            self.stdout.write(f'Superuser {username} already exists - skipping')
