@@ -38,8 +38,6 @@ CSRF_TRUSTED_ORIGINS = config(
 # Application definition
 
 INSTALLED_APPS = [
-    'cloudinary_storage',
-    'cloudinary',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -47,6 +45,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+
+    'cloudinary_storage',
+    'cloudinary',
 
     # Unity Battalion apps
     'core',           # Homepage and landing pages
