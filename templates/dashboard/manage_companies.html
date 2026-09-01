@@ -28,6 +28,9 @@
         <h1 class="dash-page-title">Companies</h1>
         <p class="dash-page-subtitle">{{ companies|length }} compan{{ companies|length|pluralize:"y,ies" }} registered</p>
     </div>
+    <a href="{% url 'dashboard:add_company' %}" class="btn-dash btn-dash--primary">
+        <i class="fas fa-plus"></i> Add Company
+    </a>
 </div>
 
 <div class="dash-card">

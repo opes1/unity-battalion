@@ -15,6 +15,10 @@ urlpatterns = [
          views.manage_companies,
          name='manage_companies'),
 
+    path('super-dashboard/companies/add/',
+         views.add_company,
+         name='add_company'),
+
     path('super-dashboard/companies/<int:pk>/edit/',
          views.edit_company,
          name='edit_company'),

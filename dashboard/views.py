@@ -51,10 +51,8 @@ def super_dashboard(request):
     Main super-admin overview page.
 
     Shows:
-      • Six stats cards (companies, members, approvals, messages,
-        events, albums)
+      • Four stats cards (companies, events, messages, albums)
       • Latest 5 unread contact messages
-      • Latest 5 pending company update requests
       • Quick-action buttons
     """
     today = date.today()
@@ -62,17 +60,6 @@ def super_dashboard(request):
     stats = {
         'total_companies':    Company.objects.count(),
         'active_companies':   Company.objects.filter(is_active=True).count(),
-        'total_members':      User.objects.filter(
-                                  role=User.Role.COMPANY_ADMIN
-                              ).count(),
-        'approved_members':   User.objects.filter(
-                                  role=User.Role.COMPANY_ADMIN,
-                                  is_approved=True,
-                              ).count(),
-        'pending_users':      User.objects.filter(
-                                  is_approved=False,
-                                  role=User.Role.COMPANY_ADMIN,
-                              ).count(),
         'unread_messages':    ContactMessage.objects.filter(is_read=False).count(),
         'total_messages':     ContactMessage.objects.count(),
         'upcoming_events':    Event.objects.filter(
@@ -141,6 +128,10 @@ def edit_company(request, pk):
         about     = request.POST.get('about', '').strip()
         phone     = request.POST.get('phone', '').strip()
         email     = request.POST.get('email', '').strip()
+        website   = request.POST.get('website', '').strip()
+        captain_name  = request.POST.get('captain_name', '').strip()
+        captain_phone = request.POST.get('captain_phone', '').strip()
+        captain_email = request.POST.get('captain_email', '').strip()
         est_date  = request.POST.get('date_established', '').strip() or None
         lat_raw   = request.POST.get('latitude', '').strip() or None
         lng_raw   = request.POST.get('longitude', '').strip() or None
@@ -184,11 +175,23 @@ def edit_company(request, pk):
             company.about            = about
             company.phone            = phone
             company.email            = email
+            company.website          = website
+            company.captain_name     = captain_name
+            company.captain_phone    = captain_phone
+            company.captain_email    = captain_email
             company.date_established = est_date or None
             company.latitude         = latitude
             company.longitude        = longitude
             company.is_active        = is_active
             company.save()
+
+            # File uploads — save separately so other fields aren't re-saved
+            if request.FILES.get('logo'):
+                company.logo = request.FILES['logo']
+                company.save(update_fields=['logo'])
+            if request.FILES.get('banner'):
+                company.banner = request.FILES['banner']
+                company.save(update_fields=['banner'])
 
             messages.success(
                 request,
@@ -201,7 +204,9 @@ def edit_company(request, pk):
             'name': name, 'church': church, 'location': location,
             'meeting_day': m_day, 'meeting_time': m_time,
             'sections_offered': sections, 'about': about,
-            'phone': phone, 'email': email,
+            'phone': phone, 'email': email, 'website': website,
+            'captain_name': captain_name, 'captain_phone': captain_phone,
+            'captain_email': captain_email,
             'date_established': est_date or '',
             'latitude': lat_raw or '', 'longitude': lng_raw or '',
             'is_active': is_active,
@@ -218,6 +223,10 @@ def edit_company(request, pk):
             'about':            company.about,
             'phone':            company.phone,
             'email':            company.email,
+            'website':          company.website,
+            'captain_name':     company.captain_name,
+            'captain_phone':    company.captain_phone,
+            'captain_email':    company.captain_email,
             'date_established': company.date_established.isoformat() if company.date_established else '',
             'latitude':         company.latitude if company.latitude is not None else '',
             'longitude':        company.longitude if company.longitude is not None else '',
@@ -234,6 +243,133 @@ def edit_company(request, pk):
         **_sidebar_counts(),
     }
     return render(request, 'dashboard/edit_company.html', context)
+
+
+@super_admin_required
+def add_company(request):
+    """
+    GET  — Renders a blank form to register a new company.
+    POST — Validates and creates the Company directly (super-admin bypass).
+    """
+    sections_all = Company.Section.choices
+    meeting_days = Company.MeetingDay.choices
+
+    errors = {}
+
+    if request.method == 'POST':
+        # ---- Collect fields -----------------------------------------
+        name      = request.POST.get('name', '').strip()
+        church    = request.POST.get('church', '').strip()
+        location  = request.POST.get('location', '').strip()
+        m_day     = request.POST.get('meeting_day', '').strip()
+        m_time    = request.POST.get('meeting_time', '').strip()
+        sections  = request.POST.getlist('sections_offered')
+        about     = request.POST.get('about', '').strip()
+        phone     = request.POST.get('phone', '').strip()
+        email     = request.POST.get('email', '').strip()
+        website   = request.POST.get('website', '').strip()
+        captain_name  = request.POST.get('captain_name', '').strip()
+        captain_phone = request.POST.get('captain_phone', '').strip()
+        captain_email = request.POST.get('captain_email', '').strip()
+        est_date  = request.POST.get('date_established', '').strip() or None
+        lat_raw   = request.POST.get('latitude', '').strip() or None
+        lng_raw   = request.POST.get('longitude', '').strip() or None
+        is_active = 'is_active' in request.POST
+
+        # ---- Validate -----------------------------------------------
+        if not name:
+            errors['name'] = 'Company name is required.'
+        if not church:
+            errors['church'] = 'Church name is required.'
+        if not location:
+            errors['location'] = 'Location is required.'
+        if not m_day:
+            errors['meeting_day'] = 'Meeting day is required.'
+        if not m_time:
+            errors['meeting_time'] = 'Meeting time is required.'
+
+        valid_sections = [c[0] for c in sections_all]
+        sections = [s for s in sections if s in valid_sections]
+
+        latitude  = None
+        longitude = None
+        if lat_raw:
+            try:
+                latitude = float(lat_raw)
+            except ValueError:
+                errors['latitude'] = 'Latitude must be a number, e.g. 6.4550'
+        if lng_raw:
+            try:
+                longitude = float(lng_raw)
+            except ValueError:
+                errors['longitude'] = 'Longitude must be a number, e.g. 3.3841'
+
+        if not errors:
+            company = Company.objects.create(
+                name=name,
+                church=church,
+                location=location,
+                meeting_day=m_day,
+                meeting_time=m_time,
+                sections_offered=sections,
+                about=about,
+                phone=phone,
+                email=email,
+                website=website,
+                captain_name=captain_name,
+                captain_phone=captain_phone,
+                captain_email=captain_email,
+                date_established=est_date or None,
+                latitude=latitude,
+                longitude=longitude,
+                is_active=is_active,
+            )
+
+            if request.FILES.get('logo'):
+                company.logo = request.FILES['logo']
+                company.save(update_fields=['logo'])
+            if request.FILES.get('banner'):
+                company.banner = request.FILES['banner']
+                company.save(update_fields=['banner'])
+
+            messages.success(
+                request,
+                f'"{company.name}" has been added successfully.',
+            )
+            return redirect('dashboard:manage_companies')
+
+        # Re-render with errors — build a form-data dict for repopulation
+        form_data = {
+            'name': name, 'church': church, 'location': location,
+            'meeting_day': m_day, 'meeting_time': m_time,
+            'sections_offered': sections, 'about': about,
+            'phone': phone, 'email': email, 'website': website,
+            'captain_name': captain_name, 'captain_phone': captain_phone,
+            'captain_email': captain_email,
+            'date_established': est_date or '',
+            'latitude': lat_raw or '', 'longitude': lng_raw or '',
+            'is_active': is_active,
+        }
+    else:
+        form_data = {
+            'name': '', 'church': '', 'location': '',
+            'meeting_day': '', 'meeting_time': '',
+            'sections_offered': [], 'about': '',
+            'phone': '', 'email': '', 'website': '',
+            'captain_name': '', 'captain_phone': '', 'captain_email': '',
+            'date_established': '', 'latitude': '', 'longitude': '',
+            'is_active': True,
+        }
+
+    context = {
+        'page_title':   'Add Company',
+        'form_data':    form_data,
+        'errors':       errors,
+        'sections_all': sections_all,
+        'meeting_days': meeting_days,
+        **_sidebar_counts(),
+    }
+    return render(request, 'dashboard/add_company.html', context)
 
 
 @super_admin_required

@@ -163,11 +163,21 @@ class Company(models.Model):
     )
 
     # ------------------------------------------------------------------
-    # phone / email
+    # phone / email / website
     # Optional public contact details shown on the company profile page.
     # ------------------------------------------------------------------
     phone = models.CharField(max_length=30, blank=True, default='')
     email = models.EmailField(blank=True, default='')
+    website = models.URLField(blank=True, default='')
+
+    # ------------------------------------------------------------------
+    # captain_name / captain_phone / captain_email
+    # Contact details for the company's Captain (officer-in-charge).
+    # Optional — not every company profile has a captain on record yet.
+    # ------------------------------------------------------------------
+    captain_name = models.CharField(max_length=200, blank=True, default='')
+    captain_phone = models.CharField(max_length=30, blank=True, default='')
+    captain_email = models.EmailField(blank=True, default='')
 
     # ------------------------------------------------------------------
     # created_at / updated_at  — audit timestamps

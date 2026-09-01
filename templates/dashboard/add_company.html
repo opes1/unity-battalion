@@ -66,36 +66,6 @@ textarea.edit-form-control { resize: vertical; min-height: 90px; }
     color: #fff;
 }
 .section-check-label:hover { border-color: var(--dash-blue); }
-.logo-preview {
-    border-radius: var(--dash-radius);
-    overflow: hidden;
-    width: 100px;
-    margin-bottom: 12px;
-    border: 1.5px solid var(--dash-border);
-}
-.logo-preview img { width: 100%; height: 100px; object-fit: cover; display: block; }
-.banner-preview {
-    border-radius: var(--dash-radius);
-    overflow: hidden;
-    max-width: 360px;
-    margin-bottom: 12px;
-    border: 1.5px solid var(--dash-border);
-}
-.banner-preview img { width: 100%; height: 160px; object-fit: cover; display: block; }
-.image-none {
-    background: var(--dash-content-bg);
-    height: 80px;
-    border-radius: var(--dash-radius);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: .8rem;
-    color: var(--dash-text-muted);
-    border: 1.5px dashed var(--dash-border);
-    margin-bottom: 12px;
-    gap: 8px;
-    max-width: 360px;
-}
 @media (max-width: 700px) { .edit-form-grid { grid-template-columns: 1fr; } }
 {% endblock %}
 
@@ -103,15 +73,15 @@ textarea.edit-form-control { resize: vertical; min-height: 90px; }
 
 <div class="dash-page-header">
     <div>
-        <h1 class="dash-page-title">Edit Company</h1>
-        <p class="dash-page-subtitle">{{ company.name }}</p>
+        <h1 class="dash-page-title">Add Company</h1>
+        <p class="dash-page-subtitle">Register a new Boys Brigade company</p>
     </div>
     <a href="{% url 'dashboard:manage_companies' %}" class="btn-dash btn-dash--outline">
         <i class="fas fa-arrow-left"></i> Back to Companies
     </a>
 </div>
 
-<form method="post" action="{% url 'dashboard:edit_company' company.pk %}" enctype="multipart/form-data">
+<form method="post" action="{% url 'dashboard:add_company' %}" enctype="multipart/form-data">
     {% csrf_token %}
 
     <!-- Basic Info -->
@@ -284,29 +254,10 @@ textarea.edit-form-control { resize: vertical; min-height: 90px; }
             <div class="edit-form-grid">
                 <div class="edit-form-group">
                     <label>Logo</label>
-                    {% if company.logo %}
-                        <div class="logo-preview">
-                            <img src="{{ company.logo.url }}" alt="Current logo">
-                        </div>
-                    {% else %}
-                        <div class="image-none" style="max-width:100px;">
-                            <i class="fas fa-image"></i>
-                        </div>
-                    {% endif %}
                     <input type="file" name="logo" class="edit-form-control" accept="image/*">
                 </div>
                 <div class="edit-form-group">
                     <label>Banner Image</label>
-                    {% if company.banner %}
-                        <div class="banner-preview">
-                            <img src="{{ company.banner.url }}" alt="Current banner">
-                        </div>
-                    {% else %}
-                        <div class="image-none">
-                            <i class="fas fa-image"></i>
-                            No banner set
-                        </div>
-                    {% endif %}
                     <input type="file" name="banner" class="edit-form-control" accept="image/*">
                 </div>
             </div>
@@ -317,7 +268,7 @@ textarea.edit-form-control { resize: vertical; min-height: 90px; }
     <div style="display:flex;gap:12px;align-items:center;">
         <button type="submit" class="btn-dash btn-dash--primary"
                 style="padding:11px 24px;font-size:.9rem;">
-            <i class="fas fa-save"></i> Save Changes
+            <i class="fas fa-plus"></i> Add Company
         </button>
         <a href="{% url 'dashboard:manage_companies' %}" class="btn-dash btn-dash--outline"
            style="padding:11px 24px;font-size:.9rem;">

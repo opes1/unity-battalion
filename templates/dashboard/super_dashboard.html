@@ -4,7 +4,7 @@
 /* ---- Stats grid ---- */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 18px;
     margin-bottom: 28px;
 }
@@ -186,7 +186,7 @@
     flex-shrink: 0;
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 900px) {
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
@@ -247,26 +247,6 @@
             <div class="stat-sub">
                 <span class="highlight" style="color:#1a6b3a;">{{ stats.active_companies }}</span> active
             </div>
-        </div>
-    </div>
-
-    <div class="stat-card stat-card--green">
-        <div class="stat-icon"><i class="fas fa-users"></i></div>
-        <div class="stat-body">
-            <div class="stat-label">Members</div>
-            <div class="stat-value">{{ stats.total_members }}</div>
-            <div class="stat-sub">
-                <span class="highlight" style="color:#1a6b3a;">{{ stats.approved_members }}</span> approved
-            </div>
-        </div>
-    </div>
-
-    <div class="stat-card {% if stats.pending_users %}stat-card--orange{% else %}stat-card--blue{% endif %}">
-        <div class="stat-icon"><i class="fas fa-clock"></i></div>
-        <div class="stat-body">
-            <div class="stat-label">Pending Users</div>
-            <div class="stat-value">{{ stats.pending_users }}</div>
-            <div class="stat-sub">awaiting approval</div>
         </div>
     </div>
 
