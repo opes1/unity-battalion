@@ -1273,6 +1273,24 @@ def edit_about(request):
         home_cta_text         = request.POST.get('home_cta_text', '').strip()
         gallery_subtitle      = request.POST.get('gallery_subtitle', '').strip()
 
+        # ---- Section 6 (new): Site Settings ------------------------------
+        site_name             = request.POST.get('site_name', '').strip()
+        site_tagline          = request.POST.get('site_tagline', '').strip()
+        announcements_enabled = 'announcements_enabled' in request.POST
+        announcements_text    = request.POST.get('announcements_text', '').strip()
+
+        # ---- Section 7 (new): Home Page Sections -------------------------
+        show_stats_section  = 'show_stats_section' in request.POST
+        show_about_section  = 'show_about_section' in request.POST
+        show_events_section = 'show_events_section' in request.POST
+        show_gallery_section = 'show_gallery_section' in request.POST
+
+        # ---- Section 8 (new): SEO & Footer -------------------------------
+        seo_title              = request.POST.get('seo_title', '').strip()
+        seo_description        = request.POST.get('seo_description', '').strip()
+        footer_copyright_text  = request.POST.get('footer_copyright_text', '').strip()
+        contact_intro_text     = request.POST.get('contact_intro_text', '').strip()
+
         # ---- Validate ---------------------------------------------------
         founded_year = None
         if founded_raw:
@@ -1298,6 +1316,16 @@ def edit_about(request):
             'home_cta_heading': home_cta_heading,
             'home_cta_text': home_cta_text,
             'gallery_subtitle': gallery_subtitle,
+            'site_name': site_name, 'site_tagline': site_tagline,
+            'announcements_enabled': announcements_enabled,
+            'announcements_text': announcements_text,
+            'show_stats_section': show_stats_section,
+            'show_about_section': show_about_section,
+            'show_events_section': show_events_section,
+            'show_gallery_section': show_gallery_section,
+            'seo_title': seo_title, 'seo_description': seo_description,
+            'footer_copyright_text': footer_copyright_text,
+            'contact_intro_text': contact_intro_text,
         }
 
         if not errors:
@@ -1325,12 +1353,29 @@ def edit_about(request):
             info.home_cta_heading       = home_cta_heading
             info.home_cta_text          = home_cta_text
             info.gallery_subtitle       = gallery_subtitle
+            info.site_name              = site_name
+            info.site_tagline           = site_tagline
+            info.announcements_enabled  = announcements_enabled
+            info.announcements_text     = announcements_text
+            info.show_stats_section     = show_stats_section
+            info.show_about_section     = show_about_section
+            info.show_events_section    = show_events_section
+            info.show_gallery_section   = show_gallery_section
+            info.seo_title              = seo_title
+            info.seo_description        = seo_description
+            info.footer_copyright_text  = footer_copyright_text
+            info.contact_intro_text     = contact_intro_text
             info.save()
 
             # Banner upload — save separately so other fields aren't re-saved
             if request.FILES.get('banner'):
                 info.banner = request.FILES['banner']
                 info.save(update_fields=['banner'])
+
+            # Hero background image upload — same pattern as banner
+            if request.FILES.get('hero_bg_image'):
+                info.hero_bg_image = request.FILES['hero_bg_image']
+                info.save(update_fields=['hero_bg_image'])
 
             messages.success(request, 'About page content updated successfully.')
             return redirect('dashboard:edit_about')
@@ -1361,6 +1406,18 @@ def edit_about(request):
             'home_cta_heading':      info.home_cta_heading,
             'home_cta_text':         info.home_cta_text,
             'gallery_subtitle':      info.gallery_subtitle,
+            'site_name':             info.site_name,
+            'site_tagline':          info.site_tagline,
+            'announcements_enabled': info.announcements_enabled,
+            'announcements_text':    info.announcements_text,
+            'show_stats_section':    info.show_stats_section,
+            'show_about_section':    info.show_about_section,
+            'show_events_section':   info.show_events_section,
+            'show_gallery_section':  info.show_gallery_section,
+            'seo_title':             info.seo_title,
+            'seo_description':       info.seo_description,
+            'footer_copyright_text': info.footer_copyright_text,
+            'contact_intro_text':    info.contact_intro_text,
         }
 
     context = {

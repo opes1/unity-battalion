@@ -393,8 +393,7 @@ textarea.form-control {
         </div>
         <h1>Contact Us</h1>
         <p class="contact-hero-sub">
-            Have a question, want to register a company, enquire about membership,
-            or learn more about Unity Battalion? We'd love to hear from you.
+            {{ battalion_info.contact_intro_text|default:"Have a question, want to register a company, enquire about membership, or learn more about Unity Battalion? We'd love to hear from you." }}
         </p>
         <nav class="contact-breadcrumb" aria-label="Breadcrumb">
             <a href="{% url 'core:home' %}"><i class="fas fa-home fa-sm"></i> Home</a>

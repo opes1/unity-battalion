@@ -122,6 +122,83 @@
     {% csrf_token %}
 
     <!-- ================================================================
+         SECTION 0 — Site Settings
+    ================================================================ -->
+    <div class="dash-card" style="margin-bottom:22px;">
+        <div class="dash-card-header">
+            <div class="dash-card-title">
+                <i class="fas fa-sliders-h"></i> Site Settings
+            </div>
+        </div>
+        <div class="dash-card-body">
+
+            <div class="form-grid-2">
+                <div class="form-field">
+                    <label class="form-label" for="site_name">Site Name</label>
+                    <input type="text" id="site_name" name="site_name"
+                           class="form-input"
+                           value="{{ form_data.site_name }}"
+                           placeholder="Unity Battalion">
+                    <div class="form-hint">Shown in the navbar and footer brand.</div>
+                </div>
+                <div class="form-field">
+                    <label class="form-label" for="site_tagline">Site Tagline</label>
+                    <input type="text" id="site_tagline" name="site_tagline"
+                           class="form-input"
+                           value="{{ form_data.site_tagline }}"
+                           placeholder="Boys Brigade Council">
+                </div>
+            </div>
+
+            <div class="form-section-divider">Announcements Bar</div>
+
+            <div class="form-field">
+                <label class="form-check-label">
+                    <input type="checkbox"
+                           name="announcements_enabled"
+                           {% if form_data.announcements_enabled %}checked{% endif %}>
+                    Show the scrolling announcements bar at the top of every page
+                </label>
+            </div>
+
+            <div class="form-field">
+                <label class="form-label" for="announcements_text">Announcements Text</label>
+                <textarea id="announcements_text" name="announcements_text"
+                          class="form-textarea form-textarea--sm"
+                          placeholder="Welcome to Unity Battalion Council…">{{ form_data.announcements_text }}</textarea>
+                <div class="form-hint">Separate items with a bullet (&bull;), e.g. "Item one &bull; Item two".</div>
+            </div>
+
+            <div class="form-section-divider">Hero Background Image</div>
+
+            {% if info.hero_bg_image %}
+                <div class="banner-preview">
+                    <img src="{{ info.hero_bg_image.url }}" alt="Current hero background">
+                </div>
+                <div class="form-hint" style="margin-bottom:12px;">
+                    Current hero background — upload a new image to replace it.
+                </div>
+            {% else %}
+                <div class="banner-none">
+                    <i class="fas fa-image"></i>
+                    No hero background image set
+                </div>
+            {% endif %}
+
+            <div class="form-field">
+                <label class="form-label" for="hero_bg_image">Upload Hero Background</label>
+                <input type="file" id="hero_bg_image" name="hero_bg_image"
+                       class="form-input"
+                       accept="image/*">
+                <div class="form-hint">
+                    Used behind the home page hero heading. Landscape image recommended.
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================================================================
          SECTION 1 — Basic Identity
     ================================================================ -->
     <div class="dash-card" style="margin-bottom:22px;">
@@ -317,6 +394,51 @@
     </div>
 
     <!-- ================================================================
+         SECTION 4 (new) — Home Page Sections
+    ================================================================ -->
+    <div class="dash-card" style="margin-bottom:22px;">
+        <div class="dash-card-header">
+            <div class="dash-card-title">
+                <i class="fas fa-eye"></i> Home Page Sections
+            </div>
+        </div>
+        <div class="dash-card-body">
+            <p style="font-size:.83rem;color:var(--dash-text-muted);margin-bottom:18px;">
+                Toggle which sections appear on the home page.
+            </p>
+
+            <div class="form-field">
+                <label class="form-check-label">
+                    <input type="checkbox" name="show_stats_section"
+                           {% if form_data.show_stats_section %}checked{% endif %}>
+                    Show Stats Section
+                </label>
+            </div>
+            <div class="form-field">
+                <label class="form-check-label">
+                    <input type="checkbox" name="show_about_section"
+                           {% if form_data.show_about_section %}checked{% endif %}>
+                    Show About Section
+                </label>
+            </div>
+            <div class="form-field">
+                <label class="form-check-label">
+                    <input type="checkbox" name="show_events_section"
+                           {% if form_data.show_events_section %}checked{% endif %}>
+                    Show Events Section
+                </label>
+            </div>
+            <div class="form-field">
+                <label class="form-check-label">
+                    <input type="checkbox" name="show_gallery_section"
+                           {% if form_data.show_gallery_section %}checked{% endif %}>
+                    Show Gallery Section
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================
          SECTION 5 — Page Content
     ================================================================ -->
     <div class="dash-card" style="margin-bottom:22px;">
@@ -417,6 +539,54 @@
                 <textarea id="cta_text" name="cta_text"
                           class="form-textarea form-textarea--sm"
                           placeholder="Whether you want to enrol your son…">{{ form_data.cta_text }}</textarea>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ================================================================
+         SECTION 6b (new) — SEO & Footer
+    ================================================================ -->
+    <div class="dash-card" style="margin-bottom:22px;">
+        <div class="dash-card-header">
+            <div class="dash-card-title">
+                <i class="fas fa-search"></i> SEO &amp; Footer
+            </div>
+        </div>
+        <div class="dash-card-body">
+
+            <div class="form-field">
+                <label class="form-label" for="seo_title">SEO Title</label>
+                <input type="text" id="seo_title" name="seo_title"
+                       class="form-input"
+                       value="{{ form_data.seo_title }}"
+                       placeholder="Unity Battalion Council - Boys Brigade Nigeria">
+                <div class="form-hint">Used as the browser tab title on pages that don't set their own.</div>
+            </div>
+
+            <div class="form-field">
+                <label class="form-label" for="seo_description">SEO Description</label>
+                <textarea id="seo_description" name="seo_description"
+                          class="form-textarea form-textarea--sm"
+                          placeholder="Unity Battalion Council, Boys Brigade Nigeria. Sure and Stedfast.">{{ form_data.seo_description }}</textarea>
+                <div class="form-hint">Used as the page meta description for search engines.</div>
+            </div>
+
+            <div class="form-field">
+                <label class="form-label" for="footer_copyright_text">Footer Copyright Text</label>
+                <input type="text" id="footer_copyright_text" name="footer_copyright_text"
+                       class="form-input"
+                       value="{{ form_data.footer_copyright_text }}"
+                       placeholder="Unity Battalion Council, Boys Brigade.">
+                <div class="form-hint">Shown after the year in the footer, e.g. "&copy; 2026 &lt;this text&gt;".</div>
+            </div>
+
+            <div class="form-field">
+                <label class="form-label" for="contact_intro_text">Contact Page Intro</label>
+                <textarea id="contact_intro_text" name="contact_intro_text"
+                          class="form-textarea form-textarea--sm"
+                          placeholder="Have a question, want to register a company…">{{ form_data.contact_intro_text }}</textarea>
+                <div class="form-hint">Intro paragraph shown under the heading on the Contact page.</div>
             </div>
 
         </div>

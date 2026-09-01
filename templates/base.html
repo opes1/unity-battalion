@@ -4,10 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Unity Battalion Council, Boys Brigade Nigeria. Sure and Stedfast.">
+    <meta name="description" content="{{ battalion_info.seo_description|default:'Unity Battalion Council, Boys Brigade Nigeria. Sure and Stedfast.' }}">
     <meta name="theme-color" content="#1A3A6B">
 
-    <title>{% block title %}Unity Battalion Council{% endblock %} | Boys Brigade</title>
+    <title>{% block title %}{{ battalion_info.seo_title|default:'Unity Battalion Council' }}{% endblock %} | Boys Brigade</title>
 
     <!-- Google Fonts: Montserrat (headings) + Open Sans (body) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,20 +28,18 @@
          ANNOUNCEMENT TICKER
          Scrolling bar at the very top for council-wide notices.
     ============================================================ -->
+    {% if battalion_info.announcements_enabled %}
     <div class="ticker-bar" role="marquee" aria-label="Announcements">
         <span class="ticker-label">
             <i class="fas fa-bullhorn"></i>&nbsp; ANNOUNCEMENTS
         </span>
         <div class="ticker-track">
             <div class="ticker-content">
-                Welcome to Unity Battalion Council - Boys Brigade &bull;&nbsp;
-                Annual Battalion Inspection - Save the Date &bull;&nbsp;
-                Register your company for the new season &bull;&nbsp;
-                &ldquo;Sure and Stedfast&rdquo; - The Boys Brigade Motto &bull;&nbsp;
-                Building Boys for Life since 1883 &bull;&nbsp;
+                {{ battalion_info.announcements_text }}
             </div>
         </div>
     </div>
+    {% endif %}
 
     <!-- ============================================================
          STICKY NAVIGATION BAR
@@ -61,8 +59,8 @@
                     </div>
                 </div>
                 <div class="nav-brand-text">
-                    <span class="brand-main">Unity Battalion</span>
-                    <span class="brand-sub">Boys Brigade Council</span>
+                    <span class="brand-main">{{ battalion_info.site_name|default:"Unity Battalion" }}</span>
+                    <span class="brand-sub">{{ battalion_info.site_tagline|default:"Boys Brigade Council" }}</span>
                 </div>
             </a>
 
@@ -154,8 +152,8 @@
                                  style="width:100%;height:100%;object-fit:contain;">
                         </div>
                         <div>
-                            <p class="footer-brand-name">Unity Battalion</p>
-                            <p class="footer-brand-sub">Boys Brigade Council</p>
+                            <p class="footer-brand-name">{{ battalion_info.site_name|default:"Unity Battalion" }}</p>
+                            <p class="footer-brand-sub">{{ battalion_info.site_tagline|default:"Boys Brigade Council" }}</p>
                         </div>
                     </div>
                     <p class="footer-tagline">
@@ -224,7 +222,7 @@
         <div class="footer-bottom">
             <div class="container footer-bottom-inner">
                 <p>
-                    &copy; {% now "Y" %} Unity Battalion Council, Boys Brigade.
+                    &copy; {% now "Y" %} {{ battalion_info.footer_copyright_text|default:"Unity Battalion Council, Boys Brigade." }}
                     All rights reserved.
                 </p>
                 <p class="footer-bottom-links">

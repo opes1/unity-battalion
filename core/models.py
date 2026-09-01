@@ -230,6 +230,72 @@ class BattalionInfo(models.Model):
     )
 
     # ------------------------------------------------------------------
+    # Announcements bar
+    # Controls the scrolling ticker bar shown at the very top of every page.
+    # ------------------------------------------------------------------
+    announcements_enabled = models.BooleanField(default=True)
+    announcements_text = models.TextField(
+        default='Welcome to Unity Battalion Council - Boys Brigade • '
+                'Annual Battalion Inspection - Save the Date • '
+                'Register your company for the new season • '
+                '"Sure and Stedfast" - The Boys Brigade Motto • '
+                'Building Boys for Life since 1883'
+    )
+
+    # ------------------------------------------------------------------
+    # Hero background image
+    # Optional custom background for the home page hero section.
+    # ------------------------------------------------------------------
+    hero_bg_image = models.ImageField(
+        upload_to='site/', null=True, blank=True,
+        help_text='Background image for the home page hero section'
+    )
+
+    # ------------------------------------------------------------------
+    # Site identity
+    # Brand name/tagline shown in the navbar and footer.
+    # ------------------------------------------------------------------
+    site_name = models.CharField(max_length=200, default='Unity Battalion')
+    site_tagline = models.CharField(max_length=200, default='Boys Brigade Council')
+
+    # ------------------------------------------------------------------
+    # Home page sections visibility
+    # Lets a super admin hide entire sections of the home page.
+    # ------------------------------------------------------------------
+    show_events_section = models.BooleanField(default=True)
+    show_gallery_section = models.BooleanField(default=True)
+    show_about_section = models.BooleanField(default=True)
+    show_stats_section = models.BooleanField(default=True)
+
+    # ------------------------------------------------------------------
+    # SEO
+    # ------------------------------------------------------------------
+    seo_title = models.CharField(
+        max_length=200, blank=True,
+        default='Unity Battalion Council - Boys Brigade Nigeria'
+    )
+    seo_description = models.TextField(
+        blank=True,
+        default='Unity Battalion Council, Boys Brigade Nigeria. Sure and Stedfast.'
+    )
+
+    # ------------------------------------------------------------------
+    # Footer
+    # ------------------------------------------------------------------
+    footer_copyright_text = models.CharField(
+        max_length=200,
+        default='Unity Battalion Council, Boys Brigade.'
+    )
+
+    # ------------------------------------------------------------------
+    # Contact page intro
+    # ------------------------------------------------------------------
+    contact_intro_text = models.TextField(
+        blank=True,
+        default='Have a question, want to register a company, or learn more about Unity Battalion? We would love to hear from you.'
+    )
+
+    # ------------------------------------------------------------------
     # updated_at
     # Refreshed automatically whenever a super admin saves this record.
     # ------------------------------------------------------------------
