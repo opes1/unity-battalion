@@ -38,6 +38,8 @@ CSRF_TRUSTED_ORIGINS = config(
 # Application definition
 
 INSTALLED_APPS = [
+    'cloudinary_storage',
+    'cloudinary',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -152,6 +154,14 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 #              Files land at  <BASE_DIR>/media/<upload_to path from the model field>
 MEDIA_URL  = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME', default=''),
+    'API_KEY': config('CLOUDINARY_API_KEY', default=''),
+    'API_SECRET': config('CLOUDINARY_API_SECRET', default=''),
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/6.0/ref/settings/#default-auto-field
